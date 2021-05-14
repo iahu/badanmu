@@ -1,0 +1,36 @@
+{
+  "name": "badanmu",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tars/stream": "^2.0.3",
+    "huya-danmu": "^2.0.3",
+    "jsonwebtoken": "^8.5.1",
+    "log4js": "^6.3.0",
+    "node-fetch": "^2.6.1",
+    "pako": "^2.0.3",
+    "request-promise": "^4.2.6",
+    "to-arraybuffer": "^1.0.1",
+    "typescript": "^4.2.4",
+    "ws": "^7.4.5"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.1",
+    "@types/node": "^15.0.2",
+    "@types/node-fetch": "^2.5.10",
+    "@types/pako": "^1.0.1",
+    "@types/ws": "^7.4.2",
+    "@typescript-eslint/eslint-plugin": "^4.22.1",
+    "@typescript-eslint/parser": "^4.22.1",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^8.3.0",
+    "prettier": "^2.2.1"
+  }
+}
