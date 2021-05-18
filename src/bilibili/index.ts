@@ -1,7 +1,7 @@
 import WebSocket from 'ws'
 import fetch from 'node-fetch'
 
-import { DanmuPacket, decode, encode } from './helper'
+import { DanmuPacket, decode, encode, parseComment, parseGift } from './helper'
 import Client from '../client'
 
 const apiURL = 'https://api.live.bilibili.com/room/v1/Room/room_init'
@@ -86,7 +86,13 @@ export default class Bilibili extends Client {
       this.emit('close', code, reason)
     }
     const onMessage = (packet: DanmuPacket) => {
-      this.emit('message', packet)
+      packet.body.messages.forEach((msg) => {
+        if (msg.cmd === 'DANMU_MSG') {
+          this.emit('message', parseComment(msg.info))
+        } else if (msg.cmd === 'SEND_GIFT') {
+          this.emit('message', parseGift(msg.data))
+        }
+      })
     }
     const onError = (error: Error) => {
       this.emit('error', error)

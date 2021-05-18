@@ -1,5 +1,8 @@
 import pako from 'pako'
+
 import fs from 'fs'
+
+import { Comment, Gift } from '../client'
 
 /**
  * 回传消息数据包
@@ -11,7 +14,7 @@ export type DanmuPacket = {
   ver: number
   op: number
   seq: number
-  body: { count: number; messages: string[] }
+  body: { count: number; messages: any[] }
 }
 
 const textEncoder = new TextEncoder()
@@ -90,4 +93,34 @@ export const decode = (data: ArrayBuffer): DanmuPacket => {
   }
 
   return result
+}
+
+export const parseComment = (rawMsg: any[]): Comment => {
+  return {
+    type: 'comment',
+    code: -1,
+    commonType: -1,
+    data: rawMsg[1],
+    playerName: rawMsg[2][1],
+    ts: Date.now(),
+  }
+}
+
+export const parseGift = (rawMsg: Record<string, any>): Gift => {
+  const { giftName, giftType, giftId, super_gift_num, super_batch_gift_num, batch_combo_id, uname, num } = rawMsg
+  return {
+    type: 'gift',
+    code: 200,
+    commonType: 200,
+    ts: Date.now(),
+    commentId: giftId,
+    giftName,
+    giftType,
+    playerName: uname,
+    num: parseInt(num) || 1,
+    combo: super_gift_num || 1,
+    comboTimes: super_batch_gift_num || 1,
+    data: `礼物：${giftName} ${num}个`,
+    batchId: batch_combo_id,
+  }
 }

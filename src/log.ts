@@ -71,10 +71,10 @@ log4js.configure({
 })
 
 const log = log4js.getLogger('default')
-const log2 = log4js.getLogger('default_2')
-const error = log4js.getLogger('error_log')
-module.exports = log
-module.exports.log2 = log2
-module.exports.error = function (message, ...args) {
-  error.error(message, args)
+export default log
+export const log2 = log4js.getLogger('default_2')
+
+const _error = log4js.getLogger('error_log')
+export const error = (message: string | number, ...args: any[]): void => {
+  _error.error(message, args)
 }

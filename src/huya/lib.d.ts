@@ -142,51 +142,115 @@ export namespace HUYA {
 
   class NobleEnterNotice {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class NobleSpeakBrst {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class SendItemSubBroadcastPacket {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class SendItemNoticeWordBroadcastPacket {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class EnterPushInfo {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class VipBarListRsp {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class WeekRankListRsp {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class WeekRankEnterBanner {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class FansRankListRsp {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class BadgeInfo {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class BadgeScoreChanged {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class FansInfoNotice {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class UserGiftNotice {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class GiftBarRsp {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class MessageNotice {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class AttendeeCountNotice {
     readFrom: (stream: Taf.JceInputStream) => void
+    body?: any
+    code?: number
+    sContent?: string;
+    [k: string]: any
   }
   class WSVerifyCookieRsp {
     iValidate: number
@@ -283,6 +347,7 @@ export namespace Taf {
   class JceInputStream {
     constructor(t: ArrayBuffer | null): void
     buf: Taf.BinBuffer
+    readInt32: (n: number, b: boolean, d?: number) => number
   }
 
   class Vector {

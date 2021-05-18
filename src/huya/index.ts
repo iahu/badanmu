@@ -1,9 +1,9 @@
 import WebSocket from 'ws'
 import fetch from 'node-fetch'
-import Tars from '@tars/stream'
-import EventEmitter from 'events'
 
+import Client, { Gift, Comment } from '../client'
 import { HUYA, Taf, TafMx } from './lib'
+import { getCommetMsg, getGiftMsg } from './helper'
 import toArrayBuffer from './to-arraybuffer'
 
 type ID = string | number
@@ -14,12 +14,12 @@ type ChatInfo = {
   yyuid: number
 }
 
-const heartbeat_interval = 60000
+const heartbeat_interval = 60 * 1000
 const fresh_gift_interval = 60 * 60 * 1000
 
 const userAgent =
   'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Mobile Safari/537.36'
-export default class Huya extends EventEmitter {
+export default class Huya extends Client {
   static url = 'wss://cdnws.api.huya.com'
   platform_id = '10002'
   clientName = '接收线程'
@@ -37,7 +37,7 @@ export default class Huya extends EventEmitter {
   // _chat_list: List
 
   constructor(roomID: ID) {
-    super()
+    super(roomID)
     this.nickname = ''
     this.cookies = ''
     this.startTime = Date.now()
@@ -91,7 +91,7 @@ export default class Huya extends EventEmitter {
 
       this.ping()
       this.heartbeatTimer = setInterval(this.ping.bind(this), heartbeat_interval)
-      this.emit('connect')
+      this.emit('open')
     })
 
     client.on('error', (hasError) => {
@@ -122,6 +122,7 @@ export default class Huya extends EventEmitter {
             }
             break
           case HUYA.EWebSocketCommandType.EWSCmdS2C_MsgPushReq: {
+            this.isLogin = true
             stream = new Taf.JceInputStream(command.vData.buffer)
             const msg = new HUYA.WSPushMessage()
             msg.readFrom(stream)
@@ -129,28 +130,43 @@ export default class Huya extends EventEmitter {
             if (TafMx.UriMapping[msg.iUri]) {
               const map = new TafMx.UriMapping[msg.iUri]()
               map.readFrom(stream)
-              this.emit(msg.iUri.toString(), map)
+
+              let body: Gift | Comment | undefined
+              if (map?.sPropsName) {
+                body = getGiftMsg({ code: -1, body: map as any })
+              } else if (map.body?.sPropsName) {
+                body = getGiftMsg(map)
+              } else if (map.sContent) {
+                body = getCommetMsg({ code: -1, body: map })
+              }
+
+              if (body) {
+                this.emit('message', {
+                  code: msg.iUri,
+                  body,
+                })
+              }
             }
             break
           }
-          case HUYA.EWebSocketCommandType.EWSCmdS2C_VerifyCookieRsp: {
-            stream = new Taf.JceInputStream(command.vData.buffer)
-            const g = new HUYA.WSVerifyCookieRsp()
-            g.readFrom(stream)
-            this.isLogin = g.iValidate == 0
-            if (this.isLogin) {
-              console.info(this.getInfo() + '登录成功')
-              this.emit('loginSuccess')
-              this.heartbeat()
-              this.heartbeatTimer = setInterval(this.heartbeat.bind(this), heartbeat_interval)
-            } else {
-              console.info(this.getInfo() + '登录失败')
-              this.emit('loginFail')
-              this.isRun = false
-              this.exit()
-            }
-            break
-          }
+          // case HUYA.EWebSocketCommandType.EWSCmdS2C_VerifyCookieRsp: {
+          //   stream = new Taf.JceInputStream(command.vData.buffer)
+          //   const g = new HUYA.WSVerifyCookieRsp()
+          //   g.readFrom(stream)
+          //   this.isLogin = g.iValidate == 0
+          //   if (this.isLogin) {
+          //     console.info(this.getInfo() + '登录成功')
+          //     this.emit('loginSuccess')
+          //     this.heartbeat()
+          //     this.heartbeatTimer = setInterval(this.heartbeat.bind(this), heartbeat_interval)
+          //   } else {
+          //     console.info(this.getInfo() + '登录失败')
+          //     this.emit('loginFail')
+          //     this.isRun = false
+          //     this.exit()
+          //   }
+          //   break
+          // }
           default:
             break
         }
@@ -223,17 +239,17 @@ export default class Huya extends EventEmitter {
     this.client?.send(e.getBuffer())
   }
 
-  heartbeat(): void {
-    const heart_beat_req = new HUYA.UserHeartBeatReq()
-    const user_id = new HUYA.UserId()
-    user_id.sHuYaUA = 'webh5&1.0.0&websocket'
-    heart_beat_req.tId = user_id
-    heart_beat_req.lTid = this.chatInfo.topsid
-    heart_beat_req.lSid = this.chatInfo.subsid
-    heart_beat_req.lPid = this.chatInfo.yyuid
-    heart_beat_req.eLineType = 1
-    this.send_wup('onlineui', 'OnUserHeartBeat', heart_beat_req)
-  }
+  // heartbeat(): void {
+  //   const heart_beat_req = new HUYA.UserHeartBeatReq()
+  //   const user_id = new HUYA.UserId()
+  //   user_id.sHuYaUA = 'webh5&1.0.0&websocket'
+  //   heart_beat_req.tId = user_id
+  //   heart_beat_req.lTid = this.chatInfo.topsid
+  //   heart_beat_req.lSid = this.chatInfo.subsid
+  //   heart_beat_req.lPid = this.chatInfo.yyuid
+  //   heart_beat_req.eLineType = 1
+  //   this.send_wup('onlineui', 'OnUserHeartBeat', heart_beat_req)
+  // }
 
   ping = (): void => {
     if (!this.isRun) {

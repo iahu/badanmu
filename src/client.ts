@@ -10,12 +10,27 @@ export interface UserInfo {
   avatar?: string
 }
 
+export interface Noble {
+  // 贵族名称
+  name: string
+  // 类型
+  type: number
+  // 等级
+  level: number
+}
+
 interface Msg {
   type: 'comment' | 'gift' | 'system'
   code: number
+  data: string
+  playerName: string
+  commonType: number
+
   ts: number
-  userInfo: UserInfo
-  content: string
+  userInfo?: UserInfo
+  nobel?: Partial<Noble>
+
+  [k: string]: any
 }
 
 export interface Comment extends Msg {
@@ -24,9 +39,21 @@ export interface Comment extends Msg {
 
 export interface Gift extends Msg {
   type: 'gift'
-  items: number
-  ppb: number
-  total: number
+  giftName: string
+  /**
+   * 总数 = 连击单位数 x 连击次数
+   */
+  num: number
+  /**
+   * 连击单位数，默认为 1
+   * @type {number}
+   */
+  combo: number
+  /**
+   * 连击次数，默认为 1
+   * @type {number}
+   */
+  comboTimes: number
 }
 
 export interface SystemInfo extends Msg {
@@ -51,6 +78,10 @@ export default abstract class Client extends EventEmiter {
     super()
     if (!roomID) throw Error('no parameter "roomID"')
     this.roomID = roomID
+  }
+
+  stop(): void {
+    this.client?.close()
   }
 
   on(event: 'open', listener: () => void): this

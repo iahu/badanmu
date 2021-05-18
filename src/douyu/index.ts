@@ -1,8 +1,9 @@
 import WebSocket from 'ws'
 
-import Client from '../client'
 import { MessageType, decode, encode } from './packet'
+import { parseMsg } from './helper'
 import { serialize } from './serialize'
+import Client from '../client'
 
 type ID = string | number
 
@@ -28,7 +29,10 @@ export default class Douyu extends Client {
   listen(): void {
     this.client.on('message', (data) => {
       const packets = decode(data as Uint8Array)
-      packets.map((packet) => this.emit('message', packet))
+      packets.map((packet) => {
+        const msg = parseMsg(packet?.body as MessageType)
+        if (msg) this.emit('message', msg)
+      })
 
       const [{ body = {} } = {}] = packets
       // 服务端返回的消息目前都是对象字面量，不存在数组或字符串形式
