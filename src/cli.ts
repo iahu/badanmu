@@ -5,8 +5,6 @@ import Kuaishou from './kuaishou'
 
 const [platform, roomID] = process.argv.slice(2)
 
-console.log('what', platform, roomID)
-
 let client: Bilibili | Douyu | Huya | Kuaishou | undefined
 
 if (platform && roomID) {
@@ -21,10 +19,11 @@ if (platform && roomID) {
   }
 
   if (client) {
-    console.log('listen roomID', client.roomID)
+    console.log('listen', platform, client.roomID)
     client.on('open', () => console.log('open'))
-    client.on('error', console.error)
-    client.on('message', console.log)
+    client.on('error', (error) => console.error(error))
+    client.on('message', (msg) => console.log('msg', msg))
+    client.on('close', (c, r) => console.log('closed', c, r))
   } else {
     console.log('不支持的平台')
   }

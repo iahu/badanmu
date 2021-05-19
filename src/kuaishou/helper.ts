@@ -1,18 +1,16 @@
-import fetch from 'node-fetch'
 import { Writer } from 'protobufjs'
+import fetch from 'node-fetch'
 
-const token = (len = 16) => {
-  let n: string
-  let r: number
-  for (n = '-_', r = 36; r--; ) n += r.toString(36)
-  for (let r = 36; r-- - 10; ) n += r.toString(36).toUpperCase()
+import { cookie } from './config'
 
-  let e = ''
-  for (r = len; r--; ) e += n[(64 * Math.random()) | 0]
-  return e
+export const getPageId = (len = 16): string => {
+  const seed = '-_zyxwvutsrqponmlkjihgfedcba9876543210ZYXWVUTSRQPONMLKJIHGFEDCBA'
+
+  let token = ''
+  for (let r = len; r--; ) token += seed[(64 * Math.random()) | 0]
+
+  return [token, Date.now()].join('_')
 }
-
-export const pageID = (): string => [token(), Date.now()].join('_')
 
 type EncodePayload = {
   token: string
@@ -37,7 +35,8 @@ export const encode = (payload: EncodePayload, writer: Writer): Writer => {
   return writer
 }
 
-type WebSocketInfo = {
+export type WebSocketInfo = {
+  liveStreamId: string
   token: string
   webSocketUrls: string[]
   __typename: 'WebSocketInfoResult'
@@ -54,14 +53,14 @@ export const getWebSocketInfo = (liveStreamId: string): Promise<WebSocketInfo> =
       'sec-fetch-dest': 'empty',
       'sec-fetch-mode': 'cors',
       'sec-fetch-site': 'same-origin',
-      cookie:
-        'kuaishou.live.bfb1s=ac5f27b3b62895859c4c1622f49856a4; clientid=3; did=web_7e51045128f24186e3071da93fec3b7c; client_key=65890b29; kpn=GAME_ZONE; soft_did=1619580708547; userId=2363789227; userId=2363789227; kuaishou.live.web_st=ChRrdWFpc2hvdS5saXZlLndlYi5zdBKgAaaIJ6wPw0BzBHc7OPgIz5Z8ZyERolArXnGBihEW2rThzr7NwUIb-2WsRaD6g11OLP30XO-gCdtiVsu9iphKFJlC2r4G4-3FFjtnu4TnD3y6J8a0y9yA_MYyxNtZlzFq7cbAmHy5vUlMOQYB5s9OqCjdmEm6I12lZVXrpeD70xKxIqOtd-MROlhzLGBLEye254-0h108hl87pdgW1cCT-WYaEsvpGUru20c-iIt7T0W8MQrXwiIgKmKNwwAQ0iditiOD0JYaXen8HbPtoiqxikx4q2B8PQ8oBTAB; kuaishou.live.web_ph=e7915482f9951bb1f19a90a6b07a33bcbea9',
+      cookie,
     },
     // referrer: 'https://live.kuaishou.com/u/KPL704668133',
     // referrerPolicy: 'unsafe-url',
     body: `{"operationName":"WebSocketInfoQuery","variables":{"liveStreamId":"${liveStreamId}"},"query":"query WebSocketInfoQuery($liveStreamId: String) {\\n  webSocketInfo(liveStreamId: $liveStreamId) {\\n    token\\n    webSocketUrls\\n    __typename\\n  }\\n}\\n"}`,
     method: 'POST',
     // mode: 'cors',
-  }).then((t) => t.json())
-  // .then((t) => t.data)
+  })
+    .then((t) => t.json())
+    .then((t) => ({ ...t.data.webSocketInfo, liveStreamId }))
 }

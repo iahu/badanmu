@@ -1,57 +1,91 @@
 import WebSocket from 'ws'
 import fetch from 'node-fetch'
+import protobuf from 'protobufjs'
 
-import { getWebSocketInfo } from './helper'
+import { WebSocketInfo, getPageId, getWebSocketInfo } from './helper'
+import { cookie } from './config'
 import Client, { ID } from '../client'
+import protoJson from './kuaishou.proto.json'
+
+const pb = protobuf.Root.fromJSON(protoJson)
+const socketMessagePb = pb.lookupType('SocketMessage')
+
+const pbMap = {
+  CS_ENTER_ROOM: {
+    key: 200,
+    value: pb.lookupType('CSWebEnterRoom'),
+  },
+  CS_HEARTBEAT: {
+    key: 1,
+    value: pb.lookupType('CSWebHeartbeat'),
+  },
+  CS_USER_EXIT: {
+    key: 202,
+    value: pb.lookupType('CSWebUserExit'),
+  },
+}
+
+type SendPayload = {
+  type: keyof typeof pbMap
+  [k: string]: any
+}
 
 export default class Kuaishou extends Client {
+  stream_id?: string
+  intervalId?: NodeJS.Timeout
+  pageId: string
+
   constructor(roomID: ID) {
     super(roomID)
 
-    // this.client = this.createClient()
-    // this.listen()
+    this.pageId = getPageId()
 
-    this.getLiveStreamId(roomID).then(getWebSocketInfo).then(console.log)
+    this.getLiveStreamId(roomID)
+      .then((stream_id) => {
+        this.stream_id = stream_id
+        return stream_id
+      })
+      .then(getWebSocketInfo)
+      .then(this.createClient)
   }
 
-  createClient(): WebSocket {
-    const client = new WebSocket('wss://live-ws-pg-group3.kuaishou.com/websocket')
+  createClient = (wsInfo: WebSocketInfo): WebSocket => {
+    const { webSocketUrls, liveStreamId, token } = wsInfo
+    const client = new WebSocket(webSocketUrls[0])
+    const payload = { liveStreamId, token, pageId: this.pageId }
+
+    client.on('open', () => {
+      this.emit('open')
+      this.send({ type: 'CS_ENTER_ROOM', payload })
+      this.heartbeat()
+    })
+
+    client.on('close', (has_error, reason) => this.emit('close', has_error, reason))
+    client.on('error', (error) => this.emit('error', error))
+    client.on('message', (msg) => this.emit('message', msg))
 
     return client
   }
 
-  listen = (): void => {
-    const client = this.client as WebSocket
+  send = (payload: SendPayload): void => {
+    const { type } = payload
+    const { key, value } = pbMap[type]
+    const payloadBuf = value.encode(payload.payload || payload).finish()
+    const msgBuf = socketMessagePb.encode({ payloadType: key, payload: payloadBuf }).finish()
 
-    client.on('open', () => {
-      this.emit('open')
-      console.log('open')
-    })
-    client.on('close', (has_error) => this.emit('close', has_error))
-    client.on('error', (error) => this.emit('error', error))
-    client.on('message', (msg) => this.emit('message', msg))
+    this.client?.send(msgBuf.buffer)
+  }
+
+  heartbeat = (): void => {
+    this.intervalId = setInterval(() => {
+      this.send({ type: 'CS_HEARTBEAT', timestamp: Date.now().valueOf() })
+    }, 30000)
   }
 
   getLiveStreamId = (roomID: ID): Promise<string> => {
     return fetch(`https://live.kuaishou.com/u/${roomID}`, {
       headers: {
-        // Connection: 'keep-alive',
-        // 'Cache-control': 'max-age=0',
-        // 'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"',
-        // 'sec-ch-ua-mobile': '?0',
-        // DNT: '1',
-        // 'Upgrade-insecure-requests': '1',
-        // 'User-Agent':
-        //   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36',
-        // Accept:
-        //   'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        // 'Sec-Fetch-Site': 'none',
-        // 'Sec-Fetch-Mode': 'navigate',
-        // 'Sec-Fetch-User': '?1',
-        // 'Sec-Fetch-Dest': 'document',
-        // 'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
-        Cookie:
-          'kuaishou.live.bfb1s=ac5f27b3b62895859c4c1622f49856a4; clientid=3; did=web_7e51045128f24186e3071da93fec3b7c; client_key=65890b29; kpn=GAME_ZONE; soft_did=1619580708547; userId=2363789227; userId=2363789227; kuaishou.live.web_st=ChRrdWFpc2hvdS5saXZlLndlYi5zdBKgAaaIJ6wPw0BzBHc7OPgIz5Z8ZyERolArXnGBihEW2rThzr7NwUIb-2WsRaD6g11OLP30XO-gCdtiVsu9iphKFJlC2r4G4-3FFjtnu4TnD3y6J8a0y9yA_MYyxNtZlzFq7cbAmHy5vUlMOQYB5s9OqCjdmEm6I12lZVXrpeD70xKxIqOtd-MROlhzLGBLEye254-0h108hl87pdgW1cCT-WYaEsvpGUru20c-iIt7T0W8MQrXwiIgKmKNwwAQ0iditiOD0JYaXen8HbPtoiqxikx4q2B8PQ8oBTAB; kuaishou.live.web_ph=e7915482f9951bb1f19a90a6b07a33bcbea9',
+        Cookie: cookie,
       },
       method: 'GET',
     })
@@ -59,7 +93,6 @@ export default class Kuaishou extends Client {
       .then((html) => {
         const match = html.match(/live-stream-id="(\w+)"/)
         if (match) {
-          console.log('live-stream-id', match[1])
           return match[1]
         }
         return ''
