@@ -119,7 +119,7 @@ const main = (port: number) => {
         if (platform && roomId) {
           const client = createClient(platform, roomId, ws)
           if (client) {
-            ws.send({ type: 'loginResponse', data: 'success' })
+            ws.send(JSON.stringify({ type: 'loginResponse', data: 'success' }))
           }
         } else {
           return ws.send('参数错误')
