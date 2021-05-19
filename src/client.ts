@@ -68,7 +68,7 @@ export type Packet = {
   ver: number
   op: number
   seq: number
-  body: Message[]
+  body: Message
 }
 
 export default abstract class Client extends EventEmiter {
@@ -85,7 +85,7 @@ export default abstract class Client extends EventEmiter {
   }
 
   on(event: 'open', listener: () => void): this
-  on(event: 'message', listener: (messages: Message[]) => void): this
+  on(event: 'message', listener: (messages: Message) => void): this
   on(event: 'error', listener: (error: Error) => void): this
   on(event: 'close', listener: (code: number, reason: string) => void): this
   on(event: 'login', listener: (success: boolean) => void): this

@@ -1,5 +1,6 @@
 import WebSocket from 'ws'
 
+import { Message } from './client'
 import Bilibili from './bilibili'
 import Douyu from './douyu'
 import Huya from './huya'
@@ -9,17 +10,82 @@ import log, { log2 } from './log'
 const [port] = process.argv.slice(2)
 
 type ClientMessage = {
+  type?: string
   platform: string
   roomId: string | number
 }
 
+type Client = Bilibili | Douyu | Huya | Kuaishou
+
 const parseClientMsg = (data: string) => {
-  try {
-    return JSON.parse(data) as ClientMessage
-  } catch (e) {
-    log.error(e)
-    throw Error(e)
+  if (data === '') {
+    return ''
   }
+  try {
+    return JSON.parse(data) as ClientMessage | string
+  } catch (e) {
+    log.error('parse client message failed', data)
+    // throw Error(e)
+    return null
+  }
+}
+
+const clientCache = {} as Record<string, Client>
+const createClient = (platform: string, roomId: number | string, ws: WebSocket): Client | undefined => {
+  const cacheKey = `${platform}@=${roomId}`
+  const cachedClient = clientCache[cacheKey]
+  if (cachedClient) {
+    return cachedClient
+  }
+
+  let client: Client | undefined
+  if (platform === 'bilibili') {
+    client = new Bilibili(roomId)
+  } else if (platform === 'douyu') {
+    client = new Douyu(roomId)
+  } else if (platform === 'huya') {
+    client = new Huya(roomId)
+  } else if (platform === 'kuaishou') {
+    client = new Kuaishou(roomId)
+  } else {
+    log2.info('收到未知平台的消息请求', platform)
+  }
+
+  if (!client) return
+
+  const roomName = `${platform} 平台，${roomId} 房间`
+  log.info(`开始监听 ${roomName}`)
+
+  const onMessage = (msg: Message) => {
+    log.info(`接收到 ${roomName} 的消息`, JSON.stringify(msg))
+    ws.send(JSON.stringify(msg))
+  }
+  const cleaup = () => {
+    client?.off('message', onMessage)
+    delete cachedClient[cachedClient]
+  }
+
+  client.on('message', onMessage)
+
+  ws.once('close', () => {
+    log.info(`${roomName} closed`)
+    client?.off('message', onMessage)
+    client?.stop()
+  })
+
+  client.on('close', () => {
+    cleaup()
+    log.info('client closed')
+    ws.send('close')
+  })
+  client.on('error', (e) => {
+    cleaup()
+    log.error('client error', e)
+    ws.send('error')
+  })
+
+  clientCache[cacheKey] = client
+  return client
 }
 
 const main = (port: number) => {
@@ -30,52 +96,39 @@ const main = (port: number) => {
   server.on('connection', (ws) => {
     log.info('收到连接请求')
     ws.on('message', (message) => {
-      log2.info('收到消息', message)
-
-      ws.send(`recived, ${message}`)
-      const msg = parseClientMsg(message.toString('utf8'))
-      const { platform, roomId } = msg
-
-      if (!(platform && roomId)) {
-        log.log('其它消息', msg)
-        return ws.send(`recived ${message}`)
+      let requestBody = message.toString('utf8').trim()
+      if (requestBody === '') {
+        // 忽略空消息
+        return
+      } else if (requestBody === 'ping') {
+        requestBody = '{type: "ping"}'
       }
 
-      // 连接消息
-      let client: Bilibili | Douyu | Huya | Kuaishou | undefined
-      if (platform === 'bilibili') {
-        client = new Bilibili(roomId)
-      } else if (platform === 'douyu') {
-        client = new Douyu(roomId)
-      } else if (platform === 'huya') {
-        client = new Huya(roomId)
-      } else if (platform === 'kuaishou') {
-        client = new Kuaishou(roomId)
+      log.info('收到消息', requestBody)
+
+      const msg = parseClientMsg(requestBody)
+
+      if (!(msg && typeof msg === 'object' && msg.type)) {
+        log2.info('未知消息', requestBody)
+        return ws.send('未知消息')
+      }
+
+      const { type, platform, roomId } = msg
+
+      if (type === 'login') {
+        if (platform && roomId) {
+          const client = createClient(platform, roomId, ws)
+          if (client) {
+            ws.send({ type: 'loginResponse', data: 'success' })
+          }
+        } else {
+          return ws.send('参数错误')
+        }
+      } else if (type === 'ping') {
+        return ws.send('pong')
       } else {
-        log.info('收到未知平台的消息请求', platform)
+        log2.info('其它消息', message)
       }
-
-      if (!client) return
-
-      const roomName = `${platform} 平台，${roomId} 房间`
-      log.info(`开始监听 ${roomName}`)
-
-      client.on('message', (msg) => {
-        log.info(`接收到 ${roomName} 的消息`, JSON.stringify(msg))
-        ws.send(JSON.stringify(msg))
-      })
-
-      ws.once('close', () => {
-        log.info(`${roomName} closed`)
-        client?.stop()
-      })
-
-      client.on('close', () => {
-        ws.send('close')
-      })
-      client.on('error', () => {
-        ws.send('error')
-      })
     })
   })
 }
