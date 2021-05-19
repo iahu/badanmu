@@ -62,7 +62,7 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
   }
   const cleaup = () => {
     client?.off('message', onMessage)
-    delete cachedClient[cachedClient]
+    delete clientCache[cacheKey]
   }
 
   client.on('message', onMessage)
