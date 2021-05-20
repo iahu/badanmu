@@ -42,6 +42,12 @@ export default class Kuaishou extends Client {
 
   async start(roomID: ID): Promise<WebSocket | undefined> {
     const pageInfo = await getPageInfo(roomID, this.requireLogin)
+
+    if (!(pageInfo.liveStreamId && pageInfo.cookie)) {
+      log2.info('参数不正常', pageInfo)
+      return
+    }
+
     const wsInfo = await getWebSocketInfo(pageInfo)
 
     this.client = this.createClient(pageInfo, wsInfo)

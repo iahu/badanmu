@@ -1,6 +1,7 @@
 import { Writer } from 'protobufjs'
 import fetch from 'node-fetch'
 import puppeteer from 'puppeteer'
+import config from './config'
 
 export const getPageId = (len = 16): string => {
   const seed = '-_zyxwvutsrqponmlkjihgfedcba9876543210ZYXWVUTSRQPONMLKJIHGFEDCBA'
@@ -87,16 +88,17 @@ export const getPageInfo = async (roomId: string | number, requireLogin?: Requir
 
   const pageInfo = await page.evaluate(() => {
     return {
-      liveStreamId: sessionStorage.getItem('kslive.log.page_live_stream_id'),
-      pageId: sessionStorage.getItem('kslive.log.page_id'),
+      liveStreamId: JSON.parse(sessionStorage.getItem('kslive.log.page_live_stream_id') || '""'),
+      pageId: JSON.parse(sessionStorage.getItem('kslive.log.page_id') || '""'),
     }
   })
 
-  const cookie = await page.cookies()
+  const cookies = await page.cookies()
+  const cookie = cookies.map((c) => `${c.name}=${c.value}`).join('; ')
   browser.close()
 
   return Promise.resolve({
     ...pageInfo,
-    cookie: cookie.map((c) => `${c.name}=${c.value}`).join('; '),
+    cookie: config.cookie ? config.cookie : cookie,
   })
 }
