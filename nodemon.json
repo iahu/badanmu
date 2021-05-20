@@ -1,0 +1,4 @@
+{
+  "ignore": [".git", "logs", "dist", "node_modules/**/node_modules", "test-client"],
+  "watch": ["src"]
+}
