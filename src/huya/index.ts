@@ -98,8 +98,8 @@ export default class Huya extends Client {
       console.log('error', hasError)
     })
 
-    client.on('close', () => {
-      console.log('close')
+    client.on('close', (code, reason) => {
+      console.log('close', code, reason)
     })
 
     client.on('message', (data) => {

@@ -31,14 +31,7 @@ const parseClientMsg = (data: string) => {
   }
 }
 
-const clientCache = {} as Record<string, Client>
 const createClient = (platform: string, roomId: number | string, ws: WebSocket): Client | undefined => {
-  const cacheKey = `${platform}@=${roomId}`
-  const cachedClient = clientCache[cacheKey]
-  if (cachedClient) {
-    return cachedClient
-  }
-
   let client: Client | undefined
   if (platform === 'bilibili') {
     client = new Bilibili(roomId)
@@ -69,7 +62,6 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
   }
   const cleaup = () => {
     client?.off('message', onMessage)
-    delete clientCache[cacheKey]
   }
 
   client.on('message', onMessage)
@@ -91,7 +83,6 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
     ws.send('error')
   })
 
-  clientCache[cacheKey] = client
   return client
 }
 
