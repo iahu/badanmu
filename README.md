@@ -31,3 +31,7 @@ ws.on('message', console.info)
 ```sh
 npm run test-client <platform> <roomId>
 ```
+
+## 已知问题
+
+- 快手平台暂时未实现
