@@ -1,7 +1,6 @@
 import { Writer } from 'protobufjs'
 import fetch from 'node-fetch'
-
-import { cookie } from './config'
+import puppeteer from 'puppeteer'
 
 export const getPageId = (len = 16): string => {
   const seed = '-_zyxwvutsrqponmlkjihgfedcba9876543210ZYXWVUTSRQPONMLKJIHGFEDCBA'
@@ -36,13 +35,12 @@ export const encode = (payload: EncodePayload, writer: Writer): Writer => {
 }
 
 export type WebSocketInfo = {
-  liveStreamId: string
   token: string
   webSocketUrls: string[]
   __typename: 'WebSocketInfoResult'
 }
 
-export const getWebSocketInfo = (liveStreamId: string): Promise<WebSocketInfo> => {
+export const getWebSocketInfo = ({ liveStreamId, cookie }: PageInfo): Promise<WebSocketInfo> => {
   return fetch('https://live.kuaishou.com/live_graphql', {
     headers: {
       accept: '*/*',
@@ -60,7 +58,45 @@ export const getWebSocketInfo = (liveStreamId: string): Promise<WebSocketInfo> =
     body: `{"operationName":"WebSocketInfoQuery","variables":{"liveStreamId":"${liveStreamId}"},"query":"query WebSocketInfoQuery($liveStreamId: String) {\\n  webSocketInfo(liveStreamId: $liveStreamId) {\\n    token\\n    webSocketUrls\\n    __typename\\n  }\\n}\\n"}`,
     method: 'POST',
     // mode: 'cors',
+  }).then((t) => t.json())
+}
+
+export type Maybe<T> = T | null | undefined
+type RequireLogin = (dataUrl: string) => void
+export type PageInfo = {
+  pageId?: Maybe<string>
+  liveStreamId?: Maybe<string>
+  cookie: string
+}
+
+export const getPageInfo = async (roomId: string | number, requireLogin?: RequireLogin): Promise<PageInfo> => {
+  const browser = await puppeteer.launch({ headless: false })
+  const page = await browser.newPage()
+  await page.goto(`https://live.kuaishou.com/u/${roomId}`)
+  await page.waitForSelector('.no-login .login')
+  const el = await page.$('.no-login .login')
+  await el?.evaluate((e) => e.click())
+  const qrimg = await page.waitForSelector('.qrcode.qr-login-code img', { visible: false })
+  await qrimg?.click()
+  const propSrc = await qrimg?.getProperty('src')
+  const dataUrl = await propSrc?.jsonValue()
+  requireLogin?.(dataUrl as string)
+
+  await page.waitForSelector('.user-info-profile[src]', { timeout: 120 * 1000, visible: false })
+  await page.reload()
+
+  const pageInfo = await page.evaluate(() => {
+    return {
+      liveStreamId: sessionStorage.getItem('kslive.log.page_live_stream_id'),
+      pageId: sessionStorage.getItem('kslive.log.page_id'),
+    }
   })
-    .then((t) => t.json())
-    .then((t) => ({ ...t.data.webSocketInfo, liveStreamId }))
+
+  const cookie = await page.cookies()
+  browser.close()
+
+  return Promise.resolve({
+    ...pageInfo,
+    cookie: cookie.map((c) => `${c.name}=${c.value}`).join('; '),
+  })
 }

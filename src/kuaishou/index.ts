@@ -1,9 +1,8 @@
 import WebSocket from 'ws'
-import fetch from 'node-fetch'
 import protobuf from 'protobufjs'
 
-import { WebSocketInfo, getPageId, getWebSocketInfo } from './helper'
-import { cookie } from './config'
+import { PageInfo, WebSocketInfo, getPageInfo, getWebSocketInfo } from './helper'
+import { log2 } from '../log'
 import Client, { ID } from '../client'
 import protoJson from './kuaishou.proto.json'
 
@@ -33,26 +32,36 @@ type SendPayload = {
 export default class Kuaishou extends Client {
   stream_id?: string
   intervalId?: NodeJS.Timeout
-  pageId: string
+  pageInfo?: PageInfo
 
   constructor(roomID: ID) {
     super(roomID)
 
-    this.pageId = getPageId()
-
-    this.getLiveStreamId(roomID)
-      .then((stream_id) => {
-        this.stream_id = stream_id
-        return stream_id
-      })
-      .then(getWebSocketInfo)
-      .then(this.createClient)
+    this.start(roomID)
   }
 
-  createClient = (wsInfo: WebSocketInfo): WebSocket => {
-    const { webSocketUrls, liveStreamId, token } = wsInfo
+  async start(roomID: ID): Promise<WebSocket | undefined> {
+    const pageInfo = await getPageInfo(roomID, this.requireLogin)
+    const wsInfo = await getWebSocketInfo(pageInfo)
+
+    this.client = this.createClient(pageInfo, wsInfo)
+    return this.client
+  }
+
+  requireLogin = (dataUrl: string): void => {
+    this.emit('requireLogin', dataUrl)
+  }
+
+  createClient = (pageInfo: PageInfo, wsInfo: WebSocketInfo): WebSocket | undefined => {
+    const { pageId, liveStreamId } = pageInfo
+    const { webSocketUrls, token } = wsInfo
+    if (!(webSocketUrls && liveStreamId && token)) {
+      log2.debug('参数不正常', wsInfo)
+      return undefined
+    }
+
     const client = new WebSocket(webSocketUrls[0])
-    const payload = { liveStreamId, token, pageId: this.pageId }
+    const payload = { liveStreamId, token, pageId }
 
     client.on('open', () => {
       this.emit('open')
@@ -80,22 +89,5 @@ export default class Kuaishou extends Client {
     this.intervalId = setInterval(() => {
       this.send({ type: 'CS_HEARTBEAT', timestamp: Date.now().valueOf() })
     }, 30000)
-  }
-
-  getLiveStreamId = (roomID: ID): Promise<string> => {
-    return fetch(`https://live.kuaishou.com/u/${roomID}`, {
-      headers: {
-        Cookie: cookie,
-      },
-      method: 'GET',
-    })
-      .then((t) => t.text())
-      .then((html) => {
-        const match = html.match(/live-stream-id="(\w+)"/)
-        if (match) {
-          return match[1]
-        }
-        return ''
-      })
   }
 }
