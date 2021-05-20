@@ -5,6 +5,7 @@ import Client, { Gift, Comment } from '../client'
 import { HUYA, Taf, TafMx } from './lib'
 import { getCommetMsg, getGiftMsg } from './helper'
 import toArrayBuffer from './to-arraybuffer'
+import { log2 } from '../log'
 
 type ID = string | number
 
@@ -16,6 +17,26 @@ type ChatInfo = {
 
 const heartbeat_interval = 60 * 1000
 const fresh_gift_interval = 60 * 60 * 1000
+
+const MSG_CACHE = [] as string[]
+
+const repeatMsg = (msg: Gift | Comment): boolean => {
+  const { type, code, data, playerName } = msg
+
+  const key = [type, code, playerName, data].join('&')
+  MSG_CACHE.push(key)
+
+  const len = MSG_CACHE.length
+  if (MSG_CACHE[len - 3] === key || MSG_CACHE[len - 2] === key) {
+    // 连续三条一样
+    if (len >= 3) {
+      MSG_CACHE.splice(0, len)
+    }
+    return true
+  }
+
+  return false
+}
 
 const userAgent =
   'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Mobile Safari/537.36'
@@ -95,11 +116,13 @@ export default class Huya extends Client {
     })
 
     client.on('error', (hasError) => {
-      console.log('error', hasError)
+      log2.log('error', hasError)
+      this.emit('error', hasError)
     })
 
     client.on('close', (code, reason) => {
-      console.log('close', code, reason)
+      log2.log('close', code, reason)
+      this.emit('close', code, reason)
     })
 
     client.on('message', (data) => {
@@ -110,40 +133,45 @@ export default class Huya extends Client {
         command.readFrom(stream)
 
         switch (command.iCmdType) {
-          case HUYA.EWebSocketCommandType.EWSCmd_WupRsp:
-            try {
-              const wup = new Taf.Wup()
-              wup.decode(command.vData.buffer)
-              const map = new TafMx.WupMapping[wup.sFuncName]()
-              wup.readStruct('tRsp', map, TafMx.WupMapping[wup.sFuncName])
-              this.emit(wup.sFuncName, map)
-            } catch (e) {
-              console.error('返回方法处理异常', e)
-            }
-            break
+          // case HUYA.EWebSocketCommandType.EWSCmd_WupRsp:
+          //   try {
+          //     const wup = new Taf.Wup()
+          //     wup.decode(command.vData.buffer)
+          //     const map = new TafMx.WupMapping[wup.sFuncName]()
+          //     wup.readStruct('tRsp', map, TafMx.WupMapping[wup.sFuncName])
+          //     this.emit(wup.sFuncName, map)
+          //   } catch (e) {
+          //     log2.error('返回方法处理异常', e)
+          //   }
+          //   break
           case HUYA.EWebSocketCommandType.EWSCmdS2C_MsgPushReq: {
             this.isLogin = true
             stream = new Taf.JceInputStream(command.vData.buffer)
             const msg = new HUYA.WSPushMessage()
             msg.readFrom(stream)
-            stream = new Taf.JceInputStream(msg.sMsg.buffer)
-            if (TafMx.UriMapping[msg.iUri]) {
-              const map = new TafMx.UriMapping[msg.iUri]()
-              map.readFrom(stream)
+            const { iUri: code, sMsg, lMsgId } = msg
+            const TargetFn = TafMx.UriMapping[code]
+            console.log('what', lMsgId)
+            if (!TargetFn) {
+              return
+            }
 
-              const code = msg.iUri
-              let message: Gift | Comment | undefined
-              if (map?.sPropsName) {
-                message = getGiftMsg({ code, body: map as any })
-              } else if (map.body?.sPropsName) {
-                message = getGiftMsg(map)
-              } else if (map.sContent) {
-                message = getCommetMsg({ code, body: map })
-              }
+            stream = new Taf.JceInputStream(sMsg.buffer)
+            const mapStream = new TargetFn()
+            mapStream.readFrom(stream)
+            let message: Gift | Comment | undefined
+            if (mapStream?.sPropsName) {
+              message = getGiftMsg({ code, body: mapStream as any })
+            } else if (mapStream.body?.sPropsName) {
+              message = getGiftMsg(mapStream)
+            } else if (mapStream.sContent) {
+              message = getCommetMsg({ code, body: mapStream })
+            }
 
-              if (message) {
-                this.emit('message', message)
-              }
+            if (message) {
+              this.emit('message', message)
+            } else {
+              // console.log('other message', mapStream)
             }
             break
           }
@@ -200,17 +228,18 @@ export default class Huya extends Client {
   }
 
   requestWsInfo(): void {
-    const ws_user_info = new HUYA.WSUserInfo()
-    ws_user_info.lUid = this.chatInfo.yyuid
-    ws_user_info.bAnonymous = 0 == this.chatInfo.yyuid
-    ws_user_info.sGuid = this._main_user_id.sGuid
-    ws_user_info.sToken = ''
-    ws_user_info.lTid = this.chatInfo.topsid
-    ws_user_info.lSid = this.chatInfo.subsid
-    ws_user_info.lGroupId = this.chatInfo.yyuid
-    ws_user_info.lGroupType = 3
+    // const ws_user_info = new HUYA.WSUserInfo()
+    // ws_user_info.bAnonymous = 0 == this.chatInfo.yyuid
+    // ws_user_info.sGuid = this._main_user_id.sGuid
+    // ws_user_info.sToken = ''
+    // ws_user_info.lTid = this.chatInfo.topsid || 0
+    // ws_user_info.lSid = this.chatInfo.subsid || 0
+    // ws_user_info.lUid = this.chatInfo.yyuid || 0
+    // ws_user_info.lGroupId = this.chatInfo.yyuid
+    // ws_user_info.lGroupType = 3
+
     let jce_stream = new Taf.JceOutputStream()
-    ws_user_info.writeTo(jce_stream)
+    // ws_user_info.writeTo(jce_stream)
     const ws_command = new HUYA.WebSocketCommand()
     ws_command.iCmdType = HUYA.EWebSocketCommandType.EWSCmd_RegisterReq
     ws_command.vData = jce_stream.getBinBuffer()
