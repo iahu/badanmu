@@ -95,7 +95,8 @@ export const getPageInfo = async (roomId: string | number, requireLogin?: Requir
 
   const cookies = await page.cookies()
   const cookie = cookies.map((c) => `${c.name}=${c.value}`).join('; ')
-  browser.close()
+
+  setTimeout(() => browser.close(), 2000)
 
   return Promise.resolve({
     ...pageInfo,

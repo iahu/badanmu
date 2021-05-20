@@ -5,7 +5,7 @@ import Bilibili from './bilibili'
 import Douyu from './douyu'
 import Huya from './huya'
 import Kuaishou from './kuaishou'
-import log, { log2 } from './log'
+import log from './log'
 
 const [port] = process.argv.slice(2)
 
@@ -48,7 +48,7 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
   } else if (platform === 'kuaishou') {
     client = new Kuaishou(roomId)
   } else {
-    log2.info('收到未知平台的消息请求', platform)
+    log.info('收到未知平台的消息请求', platform)
   }
 
   if (!client) return
@@ -109,7 +109,7 @@ const main = (port: number) => {
       const msg = parseClientMsg(requestBody)
 
       if (!(msg && typeof msg === 'object' && msg.type)) {
-        log2.info('未知消息', requestBody)
+        log.info('未知消息', requestBody)
         return ws.send('未知消息')
       }
 
@@ -127,7 +127,7 @@ const main = (port: number) => {
       } else if (type === 'ping') {
         return ws.send('pong')
       } else {
-        log2.info('其它消息', message)
+        log.info('其它消息', message)
       }
     })
   })

@@ -67,8 +67,9 @@ export default class Kuaishou extends Client {
     }
 
     const client = new WebSocket(webSocketUrls[0])
-    const payload = { liveStreamId, token, pageId }
+    log2.info('ws 创建成功', webSocketUrls[0])
 
+    const payload = { liveStreamId, token, pageId }
     client.on('open', () => {
       this.emit('open')
       this.send({ type: 'CS_ENTER_ROOM', payload })
