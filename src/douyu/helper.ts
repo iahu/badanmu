@@ -40,6 +40,7 @@ const parseGift = (rawMsg: Msg): Gift => {
     playerName: nn,
     data: `礼物：${giftName} ${gfcnt}个`,
     giftName: giftName,
+    giftId: gfid,
     num: parseInt(gfcnt),
     combo: parseInt(hits),
     comboTimes: 1,

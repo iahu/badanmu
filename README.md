@@ -29,5 +29,5 @@ ws.on('message', console.info)
 ## 开发
 
 ```sh
-npm run cli <platform> <roomId>
+npm run test-client <platform> <roomId>
 ```

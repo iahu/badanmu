@@ -89,8 +89,8 @@ export default class Huya extends Client {
       this.requestChatInfo()
       this.freshGiftListTimer = setInterval(this.requestGiftInfo.bind(this), fresh_gift_interval)
 
-      this.ping()
-      this.heartbeatTimer = setInterval(this.ping.bind(this), heartbeat_interval)
+      this.heartbeat()
+      this.heartbeatTimer = setInterval(this.heartbeat.bind(this), heartbeat_interval)
       this.emit('open')
     })
 
@@ -131,20 +131,18 @@ export default class Huya extends Client {
               const map = new TafMx.UriMapping[msg.iUri]()
               map.readFrom(stream)
 
-              let body: Gift | Comment | undefined
+              const code = msg.iUri
+              let message: Gift | Comment | undefined
               if (map?.sPropsName) {
-                body = getGiftMsg({ code: -1, body: map as any })
+                message = getGiftMsg({ code, body: map as any })
               } else if (map.body?.sPropsName) {
-                body = getGiftMsg(map)
+                message = getGiftMsg(map)
               } else if (map.sContent) {
-                body = getCommetMsg({ code: -1, body: map })
+                message = getCommetMsg({ code, body: map })
               }
 
-              if (body) {
-                this.emit('message', {
-                  code: msg.iUri,
-                  body,
-                })
+              if (message) {
+                this.emit('message', message)
               }
             }
             break
@@ -251,7 +249,7 @@ export default class Huya extends Client {
   //   this.send_wup('onlineui', 'OnUserHeartBeat', heart_beat_req)
   // }
 
-  ping = (): void => {
+  heartbeat = (): void => {
     if (!this.isRun) {
       this.exit()
       return
