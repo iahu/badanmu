@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'badanmu',
-      script: './dist/index.js',
+      script: './dist/server.js',
       watch: './dist',
     },
   ],
