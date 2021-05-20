@@ -47,13 +47,19 @@ export default class Douyu extends Client {
       this.heartbeat()
       this.emit('open')
     })
-    this.client.on('error', (error) => this.emit('error', error))
-    this.client.on('close', (had_error) => this.emit('close', had_error))
+    this.client.on('error', (error) => {
+      this.cleaup()
+      this.emit('error', error)
+    })
+    this.client.on('close', (had_error) => {
+      this.cleaup()
+      this.emit('close', had_error)
+    })
   }
 
   send(data: MessageType): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
-      this.client.send(encode(serialize(data)), (error?: Error) => {
+      this.client?.send(encode(serialize(data)), (error?: Error) => {
         if (error) {
           return reject(error)
         }
@@ -68,6 +74,10 @@ export default class Douyu extends Client {
 
   logout = (): void => {
     this.send({ type: 'logout' })
+    this.cleaup()
+  }
+
+  cleaup = (): void => {
     this._heartbeatTask && clearInterval(this._heartbeatTask)
     this.joined = false
   }

@@ -1,7 +1,7 @@
 import WebSocket from 'ws'
 
+import { CommonType, getCommonType, stringify } from './helper'
 import { Message } from './client'
-import { getCommonType, CommonType } from './helper'
 import Bilibili from './bilibili'
 import Douyu from './douyu'
 import Huya from './huya'
@@ -62,7 +62,7 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
       return
     }
     const commonType = getCommonType(msg.data) as number
-    const msgWithComType = JSON.stringify({ ...msg, commonType })
+    const msgWithComType = stringify({ ...msg, commonType, roomId })
 
     log.info(`接收到${roomName}的消息`, msgWithComType)
     ws.send(msgWithComType)
@@ -126,7 +126,7 @@ const main = (port: number) => {
         if (platform && roomId) {
           const client = createClient(platform, roomId, ws)
           if (client) {
-            ws.send(JSON.stringify({ type: 'loginResponse', data: 'success', commonType: CommonType.CONECT_HOLD }))
+            ws.send(stringify({ type: 'loginResponse', data: 'success', roomId, commonType: CommonType.CONECT_HOLD }))
           }
         } else {
           return ws.send('参数错误')

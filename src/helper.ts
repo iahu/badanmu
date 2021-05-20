@@ -23,3 +23,5 @@ export const getCommonType = (comment: string): CommonType => {
     return 0
   }
 }
+
+export const stringify = (value: unknown): string => JSON.stringify(value)
