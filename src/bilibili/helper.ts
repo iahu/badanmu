@@ -1,7 +1,4 @@
 import pako from 'pako'
-
-import fs from 'fs'
-
 import { Comment, Gift } from '../client'
 
 /**
@@ -73,7 +70,6 @@ export const decode = (data: ArrayBuffer): DanmuPacket => {
         body = [textDecoder.decode(chunk)]
       } else if (ver === 2) {
         const content = textDecoder.decode(pako.inflate(chunk))
-        fs.writeFileSync('raw.txt', `${content}`, { encoding: 'utf8', flag: 'w+' })
         body = content.split(/[\x00-\x1f]+/).filter((s) => s.startsWith('{'))
       }
 

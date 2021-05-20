@@ -53,11 +53,11 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
 
   if (!client) return
 
-  const roomName = `${platform} 平台，${roomId} 房间`
-  log.info(`开始监听 ${roomName}`)
+  const roomName = `${platform}平台，${roomId}房间`
+  log.info(`开始监听${roomName}`)
 
   const onMessage = (msg: Message) => {
-    log.info(`接收到 ${roomName} 的消息`, JSON.stringify(msg))
+    log.info(`接收到${roomName}的消息`, JSON.stringify(msg))
     ws.send(JSON.stringify(msg))
   }
   const cleaup = () => {
