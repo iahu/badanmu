@@ -64,23 +64,26 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
     client?.off('message', onMessage)
   }
 
-  client.on('message', onMessage)
-
-  ws.once('close', () => {
-    log.info(`${roomName} closed`)
-    client?.off('message', onMessage)
-    client?.stop()
+  client.once('open', () => {
+    ws.send(stringify({ type: 'loginResponse', data: 'success', roomId }))
   })
-
+  client.on('message', onMessage)
   client.on('close', () => {
     cleaup()
     log.info('client closed')
     ws.send('close')
+    ws.close()
   })
   client.on('error', (e) => {
     cleaup()
     log.error('client error', e)
     ws.send('error')
+  })
+
+  ws.once('close', () => {
+    log.info(`${roomName} closed`)
+    client?.off('message', onMessage)
+    client?.stop()
   })
 
   return client
@@ -118,10 +121,7 @@ const main = (port: number) => {
 
       if (type === 'login' || (platform && roomId)) {
         if (platform && roomId) {
-          const client = createClient(platform, roomId, ws)
-          if (client) {
-            ws.send(stringify({ type: 'loginResponse', data: 'success', roomId }))
-          }
+          createClient(platform, roomId, ws)
         } else {
           return ws.send('参数错误')
         }
