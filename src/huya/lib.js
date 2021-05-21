@@ -1610,37 +1610,46 @@ HUYA.EWebSocketCommandType = {
             this.sMessage = t.readString(2, !1, this.sMessage)
     }
     ,
-    HUYA.WSPushMessage = function () {
+    HUYA.WSPushMessage = function() {
         this.ePushType = 0,
-            this.iUri = 0,
-            this.sMsg = new Taf.BinBuffer,
-            this.iProtocolType = 0
+        this.iUri = 0,
+        this.sMsg = new Taf.BinBuffer,
+        this.iProtocolType = 0,
+        this.sGroupId = "",
+        this.lMsgId = 0,
+        this.iMsgTag = 0
     }
     ,
-    HUYA.WSPushMessage.prototype._clone = function () {
+    HUYA.WSPushMessage.prototype._clone = function() {
         return new HUYA.WSPushMessage
     }
     ,
-    HUYA.WSPushMessage.prototype._write = function (t, e, i) {
+    HUYA.WSPushMessage.prototype._write = function(t, e, i) {
         t.writeStruct(e, i)
     }
     ,
-    HUYA.WSPushMessage.prototype._read = function (t, e, i) {
+    HUYA.WSPushMessage.prototype._read = function(t, e, i) {
         return t.readStruct(e, !0, i)
     }
     ,
-    HUYA.WSPushMessage.prototype.writeTo = function (t) {
+    HUYA.WSPushMessage.prototype.writeTo = function(t) {
         t.writeInt32(0, this.ePushType),
-            t.writeInt64(1, this.iUri),
-            t.writeBytes(2, this.sMsg),
-            t.writeInt32(3, this.iProtocolType)
+        t.writeInt64(1, this.iUri),
+        t.writeBytes(2, this.sMsg),
+        t.writeInt32(3, this.iProtocolType),
+        t.writeString(4, this.sGroupId),
+        t.writeInt64(5, this.lMsgId),
+        t.writeInt32(6, this.iMsgTag)
     }
     ,
-    HUYA.WSPushMessage.prototype.readFrom = function (t) {
+    HUYA.WSPushMessage.prototype.readFrom = function(t) {
         this.ePushType = t.readInt32(0, !1, this.ePushType),
-            this.iUri = t.readInt64(1, !1, this.iUri),
-            this.sMsg = t.readBytes(2, !1, this.sMsg),
-            this.iProtocolType = t.readInt32(3, !1, this.iProtocolType)
+        this.iUri = t.readInt64(1, !1, this.iUri),
+        this.sMsg = t.readBytes(2, !1, this.sMsg),
+        this.iProtocolType = t.readInt32(3, !1, this.iProtocolType),
+        this.sGroupId = t.readString(4, !1, this.sGroupId),
+        this.lMsgId = t.readInt64(5, !1, this.lMsgId),
+        this.iMsgTag = t.readInt32(6, !1, this.iMsgTag)
     }
     ,
     HUYA.WSHeartBeat = function () {
@@ -3538,128 +3547,178 @@ HUYA.EWebSocketCommandType = {
             this.sMsg = t.readString(1, !1, this.sMsg)
     }
     ,
-HUYA.SendItemSubBroadcastPacket = function() {
-    this.iItemType = 0;
-    this.strPayId = "";
-    this.iItemCount = 0;
-    this.lPresenterUid = 0;
-    this.lSenderUid = 0;
-    this.sPresenterNick = "";
-    this.sSenderNick = "";
-    this.sSendContent = "";
-    this.iItemCountByGroup = 0;
-    this.iItemGroup = 0;
-    this.iSuperPupleLevel = 0;
-    this.iComboScore = 0;
-    this.iDisplayInfo = 0;
-    this.iEffectType = 0;
-    this.iSenderIcon = "";
-    this.iPresenterIcon = "";
-    this.iTemplateType = 0;
-    this.sExpand = "";
-    this.bBusi = false;
-    this.iColorEffectType = 0;
-    this.sPropsName = "";
-    this.iAccpet = 0;
-    this.iEventType = 0;
-    this.userInfo = new HUYA.UserIdentityInfo;
-    this.lRoomId = 0;
-    this.lHomeOwnerUid = 0;
-    this.streamerInfo = new HUYA.StreamerNode;
-    this.iPayType = -1;
-    this.iNobleLevel = 0;
-    this.tNobleLevel = new HUYA.NobleLevelInfo;
-    this.tEffectInfo = new HUYA.ItemEffectInfo;
-    this.vExUid = new Taf.Vector(new Taf.INT64);
-    this.iComboStatus = 0;
-    this.iPidColorType = 0
-}
-;
-HUYA.SendItemSubBroadcastPacket.prototype._clone = function() {
-    return new HUYA.SendItemSubBroadcastPacket
-}
-;
-HUYA.SendItemSubBroadcastPacket.prototype._write = function(t, e, i) {
-    t.writeStruct(e, i)
-}
-;
-HUYA.SendItemSubBroadcastPacket.prototype._read = function(t, e, i) {
-    return t.readStruct(e, true, i)
-}
-;
-HUYA.SendItemSubBroadcastPacket.prototype.writeTo = function(t) {
-    t.writeInt32(0, this.iItemType);
-    t.writeString(1, this.strPayId);
-    t.writeInt32(2, this.iItemCount);
-    t.writeInt64(3, this.lPresenterUid);
-    t.writeInt64(4, this.lSenderUid);
-    t.writeString(5, this.sPresenterNick);
-    t.writeString(6, this.sSenderNick);
-    t.writeString(7, this.sSendContent);
-    t.writeInt32(8, this.iItemCountByGroup);
-    t.writeInt32(9, this.iItemGroup);
-    t.writeInt32(10, this.iSuperPupleLevel);
-    t.writeInt32(11, this.iComboScore);
-    t.writeInt32(12, this.iDisplayInfo);
-    t.writeInt32(13, this.iEffectType);
-    t.writeString(14, this.iSenderIcon);
-    t.writeString(15, this.iPresenterIcon);
-    t.writeInt32(16, this.iTemplateType);
-    t.writeString(17, this.sExpand);
-    t.writeBoolean(18, this.bBusi);
-    t.writeInt32(19, this.iColorEffectType);
-    t.writeString(20, this.sPropsName);
-    t.writeInt16(21, this.iAccpet);
-    t.writeInt16(22, this.iEventType);
-    t.writeStruct(23, this.userInfo);
-    t.writeInt64(24, this.lRoomId);
-    t.writeInt64(25, this.lHomeOwnerUid);
-    t.writeStruct(26, this.streamerInfo);
-    t.writeInt32(27, this.iPayType);
-    t.writeInt32(28, this.iNobleLevel);
-    t.writeStruct(29, this.tNobleLevel);
-    t.writeStruct(30, this.tEffectInfo);
-    t.writeVector(31, this.vExUid);
-    t.writeInt32(32, this.iComboStatus);
-    t.writeInt32(33, this.iPidColorType)
-}
-;
-HUYA.SendItemSubBroadcastPacket.prototype.readFrom = function(t) {
-    this.iItemType = t.readInt32(0, false, this.iItemType);
-    this.strPayId = t.readString(1, false, this.strPayId);
-    this.iItemCount = t.readInt32(2, false, this.iItemCount);
-    this.lPresenterUid = t.readInt64(3, false, this.lPresenterUid);
-    this.lSenderUid = t.readInt64(4, false, this.lSenderUid);
-    this.sPresenterNick = t.readString(5, false, this.sPresenterNick);
-    this.sSenderNick = t.readString(6, false, this.sSenderNick);
-    this.sSendContent = t.readString(7, false, this.sSendContent);
-    this.iItemCountByGroup = t.readInt32(8, false, this.iItemCountByGroup);
-    this.iItemGroup = t.readInt32(9, false, this.iItemGroup);
-    this.iSuperPupleLevel = t.readInt32(10, false, this.iSuperPupleLevel);
-    this.iComboScore = t.readInt32(11, false, this.iComboScore);
-    this.iDisplayInfo = t.readInt32(12, false, this.iDisplayInfo);
-    this.iEffectType = t.readInt32(13, false, this.iEffectType);
-    this.iSenderIcon = t.readString(14, false, this.iSenderIcon);
-    this.iPresenterIcon = t.readString(15, false, this.iPresenterIcon);
-    this.iTemplateType = t.readInt32(16, false, this.iTemplateType);
-    this.sExpand = t.readString(17, false, this.sExpand);
-    this.bBusi = t.readBoolean(18, false, this.bBusi);
-    this.iColorEffectType = t.readInt32(19, false, this.iColorEffectType);
-    this.sPropsName = t.readString(20, false, this.sPropsName);
-    this.iAccpet = t.readInt16(21, false, this.iAccpet);
-    this.iEventType = t.readInt16(22, false, this.iEventType);
-    this.userInfo = t.readStruct(23, false, this.userInfo);
-    this.lRoomId = t.readInt64(24, false, this.lRoomId);
-    this.lHomeOwnerUid = t.readInt64(25, false, this.lHomeOwnerUid);
-    this.streamerInfo = t.readStruct(26, false, this.streamerInfo);
-    this.iPayType = t.readInt32(27, false, this.iPayType);
-    this.iNobleLevel = t.readInt32(28, false, this.iNobleLevel);
-    this.tNobleLevel = t.readStruct(29, false, this.tNobleLevel);
-    this.tEffectInfo = t.readStruct(30, false, this.tEffectInfo);
-    this.vExUid = t.readVector(31, false, this.vExUid);
-    this.iComboStatus = t.readInt32(32, false, this.iComboStatus);
-    this.iPidColorType = t.readInt32(33, false, this.iPidColorType)
-}
+    HUYA.DIYBigGiftEffect = function() {
+        this.sResourceUrl = "",
+        this.sResourceAttr = "",
+        this.sWebResourceUrl = "",
+        this.sPCResourceUrl = ""
+    }
+    ,
+    HUYA.DIYBigGiftEffect.prototype._clone = function() {
+        return new HUYA.DIYBigGiftEffect
+    }
+    ,
+    HUYA.DIYBigGiftEffect.prototype._write = function(t, e, i) {
+        t.writeStruct(e, i)
+    }
+    ,
+    HUYA.DIYBigGiftEffect.prototype._read = function(t, e, i) {
+        return t.readStruct(e, !0, i)
+    }
+    ,
+    HUYA.DIYBigGiftEffect.prototype.writeTo = function(t) {
+        t.writeString(0, this.sResourceUrl),
+        t.writeString(1, this.sResourceAttr),
+        t.writeString(2, this.sWebResourceUrl),
+        t.writeString(3, this.sPCResourceUrl)
+    }
+    ,
+    HUYA.DIYBigGiftEffect.prototype.readFrom = function(t) {
+        this.sResourceUrl = t.readString(0, !1, this.sResourceUrl),
+        this.sResourceAttr = t.readString(1, !1, this.sResourceAttr),
+        this.sWebResourceUrl = t.readString(2, !1, this.sWebResourceUrl),
+        this.sPCResourceUrl = t.readString(3, !1, this.sPCResourceUrl)
+    },
+    HUYA.SendItemSubBroadcastPacket = function() {
+        this.iItemType = 0,
+        this.strPayId = "",
+        this.iItemCount = 0,
+        this.lPresenterUid = 0,
+        this.lSenderUid = 0,
+        this.sPresenterNick = "",
+        this.sSenderNick = "",
+        this.sSendContent = "",
+        this.iItemCountByGroup = 0,
+        this.iItemGroup = 0,
+        this.iSuperPupleLevel = 0,
+        this.iComboScore = 0,
+        this.iDisplayInfo = 0,
+        this.iEffectType = 0,
+        this.iSenderIcon = "",
+        this.iPresenterIcon = "",
+        this.iTemplateType = 0,
+        this.sExpand = "",
+        this.bBusi = !1,
+        this.iColorEffectType = 0,
+        this.sPropsName = "",
+        this.iAccpet = 0,
+        this.iEventType = 0,
+        this.userInfo = new HUYA.UserIdentityInfo,
+        this.lRoomId = 0,
+        this.lHomeOwnerUid = 0,
+        this.streamerInfo = new HUYA.StreamerNode,
+        this.iPayType = -1,
+        this.iNobleLevel = 0,
+        this.tNobleLevel = new HUYA.NobleLevelInfo,
+        this.tEffectInfo = new HUYA.ItemEffectInfo,
+        this.vExUid = new Taf.Vector(new Taf.INT64),
+        this.iComboStatus = 0,
+        this.iPidColorType = 0,
+        this.iMultiSend = 0,
+        this.iVFanLevel = 0,
+        this.iUpgradeLevel = 0,
+        this.sCustomText = "",
+        this.tDIYEffect = new HUYA.DIYBigGiftEffect,
+        this.lComboSeqId = 0
+    }
+    ,
+    HUYA.SendItemSubBroadcastPacket.prototype._clone = function() {
+        return new HUYA.SendItemSubBroadcastPacket
+    }
+    ,
+    HUYA.SendItemSubBroadcastPacket.prototype._write = function(t, e, i) {
+        t.writeStruct(e, i)
+    }
+    ,
+    HUYA.SendItemSubBroadcastPacket.prototype._read = function(t, e, i) {
+        return t.readStruct(e, !0, i)
+    }
+    ,
+    HUYA.SendItemSubBroadcastPacket.prototype.writeTo = function(t) {
+        t.writeInt32(0, this.iItemType),
+        t.writeString(1, this.strPayId),
+        t.writeInt32(2, this.iItemCount),
+        t.writeInt64(3, this.lPresenterUid),
+        t.writeInt64(4, this.lSenderUid),
+        t.writeString(5, this.sPresenterNick),
+        t.writeString(6, this.sSenderNick),
+        t.writeString(7, this.sSendContent),
+        t.writeInt32(8, this.iItemCountByGroup),
+        t.writeInt32(9, this.iItemGroup),
+        t.writeInt32(10, this.iSuperPupleLevel),
+        t.writeInt32(11, this.iComboScore),
+        t.writeInt32(12, this.iDisplayInfo),
+        t.writeInt32(13, this.iEffectType),
+        t.writeString(14, this.iSenderIcon),
+        t.writeString(15, this.iPresenterIcon),
+        t.writeInt32(16, this.iTemplateType),
+        t.writeString(17, this.sExpand),
+        t.writeBoolean(18, this.bBusi),
+        t.writeInt32(19, this.iColorEffectType),
+        t.writeString(20, this.sPropsName),
+        t.writeInt16(21, this.iAccpet),
+        t.writeInt16(22, this.iEventType),
+        t.writeStruct(23, this.userInfo),
+        t.writeInt64(24, this.lRoomId),
+        t.writeInt64(25, this.lHomeOwnerUid),
+        t.writeStruct(26, this.streamerInfo),
+        t.writeInt32(27, this.iPayType),
+        t.writeInt32(28, this.iNobleLevel),
+        t.writeStruct(29, this.tNobleLevel),
+        t.writeStruct(30, this.tEffectInfo),
+        t.writeVector(31, this.vExUid),
+        t.writeInt32(32, this.iComboStatus),
+        t.writeInt32(33, this.iPidColorType),
+        t.writeInt32(34, this.iMultiSend),
+        t.writeInt32(35, this.iVFanLevel),
+        t.writeInt32(36, this.iUpgradeLevel),
+        t.writeString(37, this.sCustomText),
+        t.writeStruct(38, this.tDIYEffect),
+        t.writeInt64(39, this.lComboSeqId)
+    }
+    ,
+    HUYA.SendItemSubBroadcastPacket.prototype.readFrom = function(t) {
+        this.iItemType = t.readInt32(0, !1, this.iItemType),
+        this.strPayId = t.readString(1, !1, this.strPayId),
+        this.iItemCount = t.readInt32(2, !1, this.iItemCount),
+        this.lPresenterUid = t.readInt64(3, !1, this.lPresenterUid),
+        this.lSenderUid = t.readInt64(4, !1, this.lSenderUid),
+        this.sPresenterNick = t.readString(5, !1, this.sPresenterNick),
+        this.sSenderNick = t.readString(6, !1, this.sSenderNick),
+        this.sSendContent = t.readString(7, !1, this.sSendContent),
+        this.iItemCountByGroup = t.readInt32(8, !1, this.iItemCountByGroup),
+        this.iItemGroup = t.readInt32(9, !1, this.iItemGroup),
+        this.iSuperPupleLevel = t.readInt32(10, !1, this.iSuperPupleLevel),
+        this.iComboScore = t.readInt32(11, !1, this.iComboScore),
+        this.iDisplayInfo = t.readInt32(12, !1, this.iDisplayInfo),
+        this.iEffectType = t.readInt32(13, !1, this.iEffectType),
+        this.iSenderIcon = t.readString(14, !1, this.iSenderIcon),
+        this.iPresenterIcon = t.readString(15, !1, this.iPresenterIcon),
+        this.iTemplateType = t.readInt32(16, !1, this.iTemplateType),
+        this.sExpand = t.readString(17, !1, this.sExpand),
+        this.bBusi = t.readBoolean(18, !1, this.bBusi),
+        this.iColorEffectType = t.readInt32(19, !1, this.iColorEffectType),
+        this.sPropsName = t.readString(20, !1, this.sPropsName),
+        this.iAccpet = t.readInt16(21, !1, this.iAccpet),
+        this.iEventType = t.readInt16(22, !1, this.iEventType),
+        this.userInfo = t.readStruct(23, !1, this.userInfo),
+        this.lRoomId = t.readInt64(24, !1, this.lRoomId),
+        this.lHomeOwnerUid = t.readInt64(25, !1, this.lHomeOwnerUid),
+        this.streamerInfo = t.readStruct(26, !1, this.streamerInfo),
+        this.iPayType = t.readInt32(27, !1, this.iPayType),
+        this.iNobleLevel = t.readInt32(28, !1, this.iNobleLevel),
+        this.tNobleLevel = t.readStruct(29, !1, this.tNobleLevel),
+        this.tEffectInfo = t.readStruct(30, !1, this.tEffectInfo),
+        this.vExUid = t.readVector(31, !1, this.vExUid),
+        this.iComboStatus = t.readInt32(32, !1, this.iComboStatus),
+        this.iPidColorType = t.readInt32(33, !1, this.iPidColorType),
+        this.iMultiSend = t.readInt32(34, !1, this.iMultiSend),
+        this.iVFanLevel = t.readInt32(35, !1, this.iVFanLevel),
+        this.iUpgradeLevel = t.readInt32(36, !1, this.iUpgradeLevel),
+        this.sCustomText = t.readString(37, !1, this.sCustomText),
+        this.tDIYEffect = t.readStruct(38, !1, this.tDIYEffect),
+        this.lComboSeqId = t.readInt64(39, !1, this.lComboSeqId)
+    }
 HUYA.UserIdentityInfo = function() {
     this.vDecorationPrefix = new Taf.Vector(new HUYA.DecorationInfo);
     this.vDecorationSuffix = new Taf.Vector(new HUYA.DecorationInfo)
@@ -5874,61 +5933,105 @@ HUYA.NobleLevelInfo.prototype.readFrom = function(t) {
             this.sNickName = t.readString(1, !1, this.sNickName)
     }
     ,
-    HUYA.MessageNotice = function () {
-        this.tUserInfo = new HUYA.SenderInfo,
-            this.lTid = 0,
-            this.lSid = 0,
-            this.sContent = "",
-            this.iShowMode = 0,
-            this.tFormat = new HUYA.ContentFormat,
-            this.tBulletFormat = new HUYA.BulletFormat,
-            this.iTermType = 0,
-            this.vDecorationPrefix = new Taf.Vector(new HUYA.DecorationInfo),
-            this.vDecorationSuffix = new Taf.Vector(new HUYA.DecorationInfo),
-            this.vAtSomeone = new Taf.Vector(new HUYA.UidNickName),
-            this.lPid = 0
+    HUYA.SendMessageFormat = function() {
+        this.iSenceType = 0,
+        this.lFormatId = 0
     }
     ,
-    HUYA.MessageNotice.prototype._clone = function () {
-        return new HUYA.MessageNotice
+    HUYA.SendMessageFormat.prototype._clone = function() {
+        return new HUYA.SendMessageFormat
     }
     ,
-    HUYA.MessageNotice.prototype._write = function (t, e, i) {
+    HUYA.SendMessageFormat.prototype._write = function(t, e, i) {
         t.writeStruct(e, i)
     }
     ,
-    HUYA.MessageNotice.prototype._read = function (t, e, i) {
+    HUYA.SendMessageFormat.prototype._read = function(t, e, i) {
         return t.readStruct(e, !0, i)
     }
     ,
-    HUYA.MessageNotice.prototype.writeTo = function (t) {
-        t.writeStruct(0, this.tUserInfo),
-            t.writeInt64(1, this.lTid),
-            t.writeInt64(2, this.lSid),
-            t.writeString(3, this.sContent),
-            t.writeInt32(4, this.iShowMode),
-            t.writeStruct(5, this.tFormat),
-            t.writeStruct(6, this.tBulletFormat),
-            t.writeInt32(7, this.iTermType),
-            t.writeVector(8, this.vDecorationPrefix),
-            t.writeVector(9, this.vDecorationSuffix),
-            t.writeVector(10, this.vAtSomeone),
-            t.writeInt64(11, this.lPid)
+    HUYA.SendMessageFormat.prototype.writeTo = function(t) {
+        t.writeInt32(0, this.iSenceType),
+        t.writeInt64(1, this.lFormatId)
     }
     ,
-    HUYA.MessageNotice.prototype.readFrom = function (t) {
+    HUYA.SendMessageFormat.prototype.readFrom = function(t) {
+        this.iSenceType = t.readInt32(0, !1, this.iSenceType),
+        this.lFormatId = t.readInt64(1, !1, this.lFormatId)
+    },
+    HUYA.MessageNotice = function() {
+        this.tUserInfo = new HUYA.SenderInfo,
+        this.lTid = 0,
+        this.lSid = 0,
+        this.sContent = "",
+        this.iShowMode = 0,
+        this.tFormat = new HUYA.ContentFormat,
+        this.tBulletFormat = new HUYA.BulletFormat,
+        this.iTermType = 0,
+        this.vDecorationPrefix = new Taf.Vector(new HUYA.DecorationInfo),
+        this.vDecorationSuffix = new Taf.Vector(new HUYA.DecorationInfo),
+        this.vAtSomeone = new Taf.Vector(new HUYA.UidNickName),
+        this.lPid = 0,
+        this.vBulletPrefix = new Taf.Vector(new HUYA.DecorationInfo),
+        this.sIconUrl = "",
+        this.iType = 0,
+        this.vBulletSuffix = new Taf.Vector(new HUYA.DecorationInfo),
+        this.vTagInfo = new Taf.Vector(new HUYA.MessageTagInfo),
+        this.tSenceFormat = new HUYA.SendMessageFormat
+    }
+    ,
+    HUYA.MessageNotice.prototype._clone = function() {
+        return new HUYA.MessageNotice
+    }
+    ,
+    HUYA.MessageNotice.prototype._write = function(t, e, i) {
+        t.writeStruct(e, i)
+    }
+    ,
+    HUYA.MessageNotice.prototype._read = function(t, e, i) {
+        return t.readStruct(e, !0, i)
+    }
+    ,
+    HUYA.MessageNotice.prototype.writeTo = function(t) {
+        t.writeStruct(0, this.tUserInfo),
+        t.writeInt64(1, this.lTid),
+        t.writeInt64(2, this.lSid),
+        t.writeString(3, this.sContent),
+        t.writeInt32(4, this.iShowMode),
+        t.writeStruct(5, this.tFormat),
+        t.writeStruct(6, this.tBulletFormat),
+        t.writeInt32(7, this.iTermType),
+        t.writeVector(8, this.vDecorationPrefix),
+        t.writeVector(9, this.vDecorationSuffix),
+        t.writeVector(10, this.vAtSomeone),
+        t.writeInt64(11, this.lPid),
+        t.writeVector(12, this.vBulletPrefix),
+        t.writeString(13, this.sIconUrl),
+        t.writeInt32(14, this.iType),
+        t.writeVector(15, this.vBulletSuffix),
+        t.writeVector(16, this.vTagInfo),
+        t.writeStruct(17, this.tSenceFormat)
+    }
+    ,
+    HUYA.MessageNotice.prototype.readFrom = function(t) {
         this.tUserInfo = t.readStruct(0, !1, this.tUserInfo),
-            this.lTid = t.readInt64(1, !1, this.lTid),
-            this.lSid = t.readInt64(2, !1, this.lSid),
-            this.sContent = t.readString(3, !1, this.sContent),
-            this.iShowMode = t.readInt32(4, !1, this.iShowMode),
-            this.tFormat = t.readStruct(5, !1, this.tFormat),
-            this.tBulletFormat = t.readStruct(6, !1, this.tBulletFormat),
-            this.iTermType = t.readInt32(7, !1, this.iTermType),
-            this.vDecorationPrefix = t.readVector(8, !1, this.vDecorationPrefix),
-            this.vDecorationSuffix = t.readVector(9, !1, this.vDecorationSuffix),
-            this.vAtSomeone = t.readVector(10, !1, this.vAtSomeone),
-            this.lPid = t.readInt64(11, !1, this.lPid)
+        this.lTid = t.readInt64(1, !1, this.lTid),
+        this.lSid = t.readInt64(2, !1, this.lSid),
+        this.sContent = t.readString(3, !1, this.sContent),
+        this.iShowMode = t.readInt32(4, !1, this.iShowMode),
+        this.tFormat = t.readStruct(5, !1, this.tFormat),
+        this.tBulletFormat = t.readStruct(6, !1, this.tBulletFormat),
+        this.iTermType = t.readInt32(7, !1, this.iTermType),
+        this.vDecorationPrefix = t.readVector(8, !1, this.vDecorationPrefix),
+        this.vDecorationSuffix = t.readVector(9, !1, this.vDecorationSuffix),
+        this.vAtSomeone = t.readVector(10, !1, this.vAtSomeone),
+        this.lPid = t.readInt64(11, !1, this.lPid),
+        this.vBulletPrefix = t.readVector(12, !1, this.vBulletPrefix),
+        this.sIconUrl = t.readString(13, !1, this.sIconUrl),
+        this.iType = t.readInt32(14, !1, this.iType),
+        this.vBulletSuffix = t.readVector(15, !1, this.vBulletSuffix),
+        this.vTagInfo = t.readVector(16, !1, this.vTagInfo),
+        this.tSenceFormat = t.readStruct(17, !1, this.tSenceFormat)
     }
     ,
     HUYA.JumpLiveEventReq = function () {

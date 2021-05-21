@@ -282,8 +282,12 @@ export namespace HUYA {
       | 1400
       | 8006
 
-    sMsg: Taf.BinBuffer
+    ePushType: number
     iProtocolType: number
+    sGroupId: string
+    lMsgId: number
+    iMsgTag: number
+    sMsg: Taf.BinBuffer
     readFrom: (jceInputStream: Taf.JceInputStream) => void
   }
 

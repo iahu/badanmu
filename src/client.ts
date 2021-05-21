@@ -1,5 +1,6 @@
 import EventEmiter from 'events'
 import WebSocket from 'ws'
+import querystring from 'querystring'
 
 export type ID = number | string
 
@@ -73,6 +74,7 @@ export type Packet = {
 
 export default abstract class Client extends EventEmiter {
   roomID: ID
+  platform?: string
   client?: WebSocket
   constructor(roomID: ID) {
     super()
@@ -80,16 +82,33 @@ export default abstract class Client extends EventEmiter {
     this.roomID = roomID
   }
 
+  roomInfo(): string {
+    return querystring.stringify({ 平台: this.platform || '', 房间: this.roomID })
+  }
+
   stop(): void {
     this.client?.close()
   }
 
+  emit(event: 'open'): boolean
+  emit(event: 'close', code: number, reason: string): boolean
+  emit(event: 'error', error: Error): boolean
+  emit(event: 'login', success: boolean): boolean
+  emit(event: 'logout', success: boolean): boolean
+  emit(event: 'requireLogin', data: string): boolean
+  emit(event: 'message', data: Gift | Comment): boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  emit(event: string | symbol, ...args: any[]): boolean {
+    return super.emit(event, ...args)
+  }
+
   on(event: 'open', listener: () => void): this
-  on(event: 'message', listener: (messages: Message) => void): this
-  on(event: 'error', listener: (error: Error) => void): this
   on(event: 'close', listener: (code: number, reason: string) => void): this
+  on(event: 'error', listener: (error: Error) => void): this
   on(event: 'login', listener: (success: boolean) => void): this
   on(event: 'logout', listener: () => void): this
+  on(event: 'requireLogin', listener: (data: string) => void): this
+  on(event: 'message', listener: (messages: Message) => void): this
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   on(event: string | symbol, listener: (...args: any[]) => void): this {
     return super.on(event, listener)

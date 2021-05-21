@@ -93,6 +93,9 @@ const main = (port: number) => {
 
   server.on('connection', (ws) => {
     log.info('收到连接请求')
+
+    ws.send(stringify({ commonType: CommonType.CONECT_HOLD }))
+
     ws.on('message', (message) => {
       let requestBody = message.toString('utf8').trim()
       if (requestBody === '') {
@@ -106,18 +109,18 @@ const main = (port: number) => {
 
       const msg = parseClientMsg(requestBody)
 
-      if (!(msg && typeof msg === 'object' && msg.type)) {
+      if (!(msg && typeof msg === 'object')) {
         log.info('未知消息', requestBody)
         return ws.send('未知消息')
       }
 
       const { type, platform, roomId } = msg
 
-      if (type === 'login') {
+      if (type === 'login' || (platform && roomId)) {
         if (platform && roomId) {
           const client = createClient(platform, roomId, ws)
           if (client) {
-            ws.send(stringify({ type: 'loginResponse', data: 'success', roomId, commonType: CommonType.CONECT_HOLD }))
+            ws.send(stringify({ type: 'loginResponse', data: 'success', roomId }))
           }
         } else {
           return ws.send('参数错误')

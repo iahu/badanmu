@@ -51,9 +51,9 @@ export default class Douyu extends Client {
       this.cleaup()
       this.emit('error', error)
     })
-    this.client.on('close', (had_error) => {
+    this.client.on('close', (code, reason) => {
       this.cleaup()
-      this.emit('close', had_error)
+      this.emit('close', code, reason)
     })
   }
 

@@ -44,7 +44,7 @@ export default class Kuaishou extends Client {
     const pageInfo = await getPageInfo(roomID, this.requireLogin)
 
     if (!(pageInfo.liveStreamId && pageInfo.cookie)) {
-      log2.info('参数不正常', pageInfo)
+      log2.info(this.roomInfo(), '参数不正常', pageInfo)
       return
     }
 
@@ -62,12 +62,12 @@ export default class Kuaishou extends Client {
     const { pageId, liveStreamId } = pageInfo
     const { webSocketUrls, token } = wsInfo
     if (!(webSocketUrls && liveStreamId && token)) {
-      log2.debug('参数不正常', wsInfo)
+      log2.debug(this.roomInfo(), '参数不正常', wsInfo)
       return undefined
     }
 
     const client = new WebSocket(webSocketUrls[0])
-    log2.info('ws 创建成功', webSocketUrls[0])
+    log2.info(this.roomInfo(), 'ws 创建成功', webSocketUrls[0])
 
     const payload = { liveStreamId, token, pageId }
     client.on('open', () => {
@@ -78,7 +78,7 @@ export default class Kuaishou extends Client {
 
     client.on('close', (has_error, reason) => this.emit('close', has_error, reason))
     client.on('error', (error) => this.emit('error', error))
-    client.on('message', (msg) => this.emit('message', msg))
+    client.on('message', (msg) => this.emit('message', msg as any))
 
     return client
   }
