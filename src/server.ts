@@ -100,15 +100,16 @@ const main = (port: number) => {
     ws.send(stringify({ commonType: CommonType.CONECT_HOLD }))
 
     ws.on('message', (message) => {
-      let requestBody = message.toString('utf8').trim()
+      const requestBody = message.toString('utf8').trim()
+      log.info('收到消息', requestBody)
+
       if (requestBody === '') {
         // 忽略空消息
         return
       } else if (requestBody === 'ping') {
-        requestBody = '{type: "ping"}'
+        ws.send('pong')
+        return
       }
-
-      log.info('收到消息', requestBody)
 
       const msg = parseClientMsg(requestBody)
 
@@ -125,8 +126,6 @@ const main = (port: number) => {
         } else {
           return ws.send('参数错误')
         }
-      } else if (type === 'ping') {
-        return ws.send('pong')
       } else {
         log.info('其它消息', message)
       }
