@@ -64,23 +64,26 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
     client?.off('message', onMessage)
   }
 
-  client.on('message', onMessage)
-
-  ws.once('close', () => {
-    log.info(`${roomName} closed`)
-    client?.off('message', onMessage)
-    client?.stop()
+  client.once('open', () => {
+    ws.send(stringify({ type: 'loginResponse', data: 'success', roomId }))
   })
-
+  client.on('message', onMessage)
   client.on('close', () => {
     cleaup()
     log.info('client closed')
     ws.send('close')
+    ws.close()
   })
   client.on('error', (e) => {
     cleaup()
     log.error('client error', e)
     ws.send('error')
+  })
+
+  ws.once('close', () => {
+    log.info(`${roomName} closed`)
+    client?.off('message', onMessage)
+    client?.stop()
   })
 
   return client
@@ -97,15 +100,16 @@ const main = (port: number) => {
     ws.send(stringify({ commonType: CommonType.CONECT_HOLD }))
 
     ws.on('message', (message) => {
-      let requestBody = message.toString('utf8').trim()
+      const requestBody = message.toString('utf8').trim()
+      log.info('收到消息', requestBody)
+
       if (requestBody === '') {
         // 忽略空消息
         return
       } else if (requestBody === 'ping') {
-        requestBody = '{type: "ping"}'
+        ws.send('pong')
+        return
       }
-
-      log.info('收到消息', requestBody)
 
       const msg = parseClientMsg(requestBody)
 
@@ -118,15 +122,10 @@ const main = (port: number) => {
 
       if (type === 'login' || (platform && roomId)) {
         if (platform && roomId) {
-          const client = createClient(platform, roomId, ws)
-          if (client) {
-            ws.send(stringify({ type: 'loginResponse', data: 'success', roomId }))
-          }
+          createClient(platform, roomId, ws)
         } else {
           return ws.send('参数错误')
         }
-      } else if (type === 'ping') {
-        return ws.send('pong')
       } else {
         log.info('其它消息', message)
       }

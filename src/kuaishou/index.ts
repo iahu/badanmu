@@ -1,7 +1,18 @@
 import WebSocket from 'ws'
 import protobuf from 'protobufjs'
 
-import { PageInfo, WebSocketInfo, getPageInfo, getWebSocketInfo } from './helper'
+import {
+  PageInfo,
+  getLiveDetail,
+  getLiveStreamId,
+  getPageId,
+  getPageInfo,
+  getTokenInfo,
+  getWebSocketInfo,
+  makeCookie,
+  parseCookie,
+} from './helper'
+import { cookies } from './config'
 import { log2 } from '../log'
 import Client, { ID } from '../client'
 import protoJson from './kuaishou.proto.json'
@@ -29,6 +40,12 @@ type SendPayload = {
   [k: string]: any
 }
 
+type ClientOption = {
+  token: string
+  pageId: string
+  liveStreamId: string
+}
+
 export default class Kuaishou extends Client {
   stream_id?: string
   intervalId?: NodeJS.Timeout
@@ -37,20 +54,63 @@ export default class Kuaishou extends Client {
   constructor(roomID: ID) {
     super(roomID)
 
-    this.start(roomID)
+    this.start(roomID).catch((e) => {
+      this.emit('error', e)
+      this.emit('close', 0, e)
+    })
   }
 
   async start(roomID: ID): Promise<WebSocket | undefined> {
-    const pageInfo = await getPageInfo(roomID, this.requireLogin)
-
-    if (!(pageInfo.liveStreamId && pageInfo.cookie)) {
-      log2.info(this.roomInfo(), '参数不正常', pageInfo)
-      return
+    const defaultCookie = makeCookie(cookies)
+    const tokenInfo = await getTokenInfo(defaultCookie)
+    if (tokenInfo.errorMsg) {
+      log2.log(this.roomInfo(), tokenInfo.errorMsg)
+      return Promise.reject('连接失败')
     }
 
-    const wsInfo = await getWebSocketInfo(pageInfo)
+    const mergedCookies = {
+      ...cookies,
+      did: tokenInfo.cookie.did,
+      passToken: tokenInfo.passToken,
+      userId: tokenInfo.userId,
+      'kuaishou.live.web_st': tokenInfo['kuaishou.live.web_st'],
+      'kuaishou.live.web.at': tokenInfo['kuaishou.live.web.at'],
+    }
+    const cookie = makeCookie(tokenInfo.cookie)
 
-    this.client = this.createClient(pageInfo, wsInfo)
+    // const pageInfo = await getPageInfo(roomID)
+    // const { cookie } = pageInfo
+    // const pageCookies = parseCookie(pageInfo.cookie)
+    const streamCookie = makeCookie({
+      did: mergedCookies.did,
+      userId: mergedCookies.userId,
+      'kuaishou.live.web_st': mergedCookies['kuaishou.live.web_st'],
+    })
+
+    const liveDetail = await getLiveDetail(roomID, cookie)
+    console.log('what', liveDetail)
+
+    const liveStreamId = await getLiveStreamId(roomID, streamCookie)
+    console.log('liveStreamId', liveStreamId)
+    if (!liveStreamId) {
+      console.log('没获取到 liveStreamId')
+      // return Promise.reject('没获取到 liveStreamId')
+    }
+
+    const wsInfo = await getWebSocketInfo(liveStreamId, cookie)
+    const { webSocketUrls, token } = wsInfo
+    const pageId = getPageId()
+
+    if (!(webSocketUrls && token)) {
+      console.log('账号异常', wsInfo)
+      return Promise.reject('账号异常')
+    }
+
+    this.client = this.createClient(webSocketUrls[0], {
+      token,
+      pageId,
+      liveStreamId,
+    })
     return this.client
   }
 
@@ -58,16 +118,15 @@ export default class Kuaishou extends Client {
     this.emit('requireLogin', dataUrl)
   }
 
-  createClient = (pageInfo: PageInfo, wsInfo: WebSocketInfo): WebSocket | undefined => {
-    const { pageId, liveStreamId } = pageInfo
-    const { webSocketUrls, token } = wsInfo
-    if (!(webSocketUrls && liveStreamId && token)) {
-      log2.debug(this.roomInfo(), '参数不正常', wsInfo)
+  createClient = (url: string, option: ClientOption): WebSocket | undefined => {
+    const { pageId, liveStreamId, token } = option
+    if (!(url && liveStreamId && token)) {
+      log2.debug(this.roomInfo(), '参数不正常', option)
       return undefined
     }
 
-    const client = new WebSocket(webSocketUrls[0])
-    log2.info(this.roomInfo(), 'ws 创建成功', webSocketUrls[0])
+    const client = new WebSocket(url)
+    log2.info(this.roomInfo(), 'ws 创建成功', url)
 
     const payload = { liveStreamId, token, pageId }
     client.on('open', () => {
