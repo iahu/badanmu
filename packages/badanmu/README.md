@@ -99,6 +99,13 @@ export type Message = Comment | Gift | SystemInfo
 
 [查看详情](http://gitlab.egret-inner.com/hushuibin/badanmu/blob/master/src/client.ts#L5-64)
 
+## 部署
+
+此项目使用 pm2 部署，并配置 nginx 反向代理来做请求分配管理
+
+目前线上只有一个服务器实例，当需要换更新的时候，可以通过 `pm2 run ecosystem --only badanmu-server-800x`
+来启动另一个新的服务器实例，在成功启动新服务器实例后，可以停掉之前的老服务，达到热更新的目的
+
 ## 已知问题
 
 - 快手平台暂时未实现
