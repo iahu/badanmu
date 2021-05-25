@@ -1,8 +1,5 @@
 import WebSocket from 'ws'
-import chalk from 'chalk'
 import EventEmitter from 'events'
-
-const colors = [chalk.bold.red, chalk.bold.blue, chalk.bold.yellow]
 
 export type MsgType = 'login' | 'danmu'
 export interface SocketData {
@@ -23,14 +20,10 @@ const socketData = (msg: Partial<SocketData>) => {
   })
 }
 
-let index = 0
-
 export default class TestClient extends EventEmitter {
-  private colorFormatter: chalk.Chalk
-  //页面是否准备完成
-  private pageHoldOn = false
-
   private wsOrigin: string
+  private pageHoldOn = false
+  ws: WebSocket
 
   constructor(isDev = false) {
     super()
@@ -39,8 +32,7 @@ export default class TestClient extends EventEmitter {
       wsOrigin = 'ws://localhost:8181'
     }
     this.wsOrigin = wsOrigin
-    this.colorFormatter = colors[index]
-    index++
+    this.ws = new WebSocket(this.wsOrigin)
   }
 
   /**
@@ -48,7 +40,7 @@ export default class TestClient extends EventEmitter {
    * @param {string}
    */
   login(platform: string, roomId: string): void {
-    const ws = new WebSocket(this.wsOrigin)
+    const ws = this.ws
     ws.on('open', () => {
       console.log(`连接成功 ${platform}, ${roomId}`)
       if (!this.pageHoldOn) {
@@ -59,5 +51,18 @@ export default class TestClient extends EventEmitter {
     ws.on('error', console.error)
     ws.on('close', (e) => this.emit('close', e))
     ws.on('message', console.info)
+  }
+
+  clientSize(): void {
+    this.ws.on('open', () => {
+      this.ws.send(JSON.stringify({ type: 'clientSize' }))
+    })
+    this.ws.on('message', (msg) => {
+      const data = JSON.parse(msg.toString('utf8'))
+      if (data.type === 'clientSize') {
+        console.info(msg)
+        this.ws.close()
+      }
+    })
   }
 }

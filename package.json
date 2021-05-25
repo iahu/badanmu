@@ -1,45 +1,6 @@
 {
-  "name": "badanmu",
+  "name": "badanmu-workspace",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "cli": "ts-node ./src/cli.ts",
-    "build": "tsc",
-    "dev": "cross-env NODE_ENV=developement nodemon ./src/server.ts",
-    "prestart": "npm run build",
-    "start": "cross-env NODE_ENV=production node ./dist/server.js",
-    "test-client": "ts-node ./test-client/index.ts"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@tars/stream": "^2.0.3",
-    "@types/node-fetch": "^2.5.10",
-    "huya-danmu": "^2.0.3",
-    "jsonwebtoken": "^8.5.1",
-    "log4js": "^6.3.0",
-    "node-fetch": "^2.6.1",
-    "pako": "^2.0.3",
-    "protobufjs": "^6.11.2",
-    "puppeteer": "^9.1.1",
-    "typescript": "^4.2.4",
-    "ws": "^7.4.5"
-  },
-  "devDependencies": {
-    "@types/jsonwebtoken": "^8.5.1",
-    "@types/node": "^15.0.2",
-    "@types/pako": "^1.0.1",
-    "@types/ws": "^7.4.2",
-    "@typescript-eslint/eslint-plugin": "^4.22.1",
-    "@typescript-eslint/parser": "^4.22.1",
-    "cross-env": "^7.0.3",
-    "eslint": "^7.26.0",
-    "eslint-config-prettier": "^8.3.0",
-    "nodemon": "^2.0.7",
-    "prettier": "^2.2.1",
-    "ts-node": "^9.1.1"
-  }
+  "private": true,
+  "workspaces": ["./packages/*"]
 }
