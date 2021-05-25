@@ -46,28 +46,23 @@ export default class Kuaishou extends Client {
   constructor(roomID: ID) {
     super(roomID)
 
-    login(this.requireLogin)
-      .then((session) => {
-        console.log('session', session)
-        this.sessionInfo = session
-        return session
-      })
-      .then(() => this.start(roomID))
-      .catch((e) => {
-        this.emit('error', e)
-        this.emit('close', 0, e)
-      })
+    // this.login()
+
+    this.start(roomID).catch((e) => {
+      this.emit('error', e)
+      this.emit('close', 0, e)
+    })
+  }
+
+  login = (): void => {
+    login(this.requireLogin).then((session) => {
+      console.log('session', session)
+      this.sessionInfo = session
+    })
   }
 
   async start(roomID: ID): Promise<WebSocket | undefined> {
-    const session = this.sessionInfo || ({} as SessionInfo)
-    const defaultCookie = makeCookie({
-      ...cookies,
-      passToken: session.passToken,
-      'kuaishou.live.web_st': session['kuaishou.live.web_st'],
-      'kuaishou.live.web.at': session['kuaishou.live.web.at'],
-      userId: session.userId,
-    })
+    const defaultCookie = makeCookie(cookies)
     const tokenInfo = await getTokenInfo(defaultCookie)
     if (tokenInfo.errorMsg) {
       log2.log(this.roomInfo(), tokenInfo.errorMsg)
