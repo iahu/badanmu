@@ -47,8 +47,8 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
 
   if (!client) return
 
-  const roomName = `${platform}平台，${roomId}房间`
-  log.info(`开始监听${roomName}`)
+  const roomInfo = client.roomInfo()
+  log.info(`开始监听${roomInfo}`)
 
   const onMessage = (msg: Message) => {
     if (!msg) {
@@ -57,33 +57,33 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
     const commonType = getCommonType(msg.data) as number
     const msgWithComType = stringify({ ...msg, commonType, roomId })
 
-    log.info(`接收到${roomName}的消息`, msgWithComType)
+    log.info(`接收到${roomInfo}的消息`, msgWithComType)
     ws.send(msgWithComType)
   }
-  const cleaup = () => {
+  const cleanup = () => {
     client?.off('message', onMessage)
+    client?.stop()
   }
 
   client.once('open', () => {
     ws.send(stringify({ type: 'loginResponse', data: 'success', roomId }))
   })
   client.on('message', onMessage)
-  client.on('close', () => {
-    cleaup()
-    log.info('client closed')
+  client.once('close', (code, reason) => {
+    cleanup()
+    log.info(roomInfo, 'client closed', code, reason)
     ws.send('close')
     ws.close()
   })
   client.on('error', (e) => {
-    cleaup()
-    log.error('client error', e)
+    cleanup()
+    log.error(roomInfo, 'client error', e)
     ws.send('error')
   })
 
   ws.once('close', () => {
-    log.info(`${roomName} closed`)
-    client?.off('message', onMessage)
-    client?.stop()
+    log.info(roomInfo, 'closed')
+    cleanup()
   })
 
   return client
