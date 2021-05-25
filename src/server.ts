@@ -47,6 +47,7 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
 
   if (!client) return
 
+  client.platform = platform
   const roomInfo = client.roomInfo()
   log.info(`开始监听${roomInfo}`)
 
@@ -68,6 +69,7 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
   client.once('open', () => {
     ws.send(stringify({ type: 'loginResponse', data: 'success', roomId }))
   })
+  client.on('requireLogin', (dataUrl) => ws.send(JSON.stringify({ type: 'requireLogin', data: dataUrl })))
   client.on('message', onMessage)
   client.once('close', (code, reason) => {
     cleanup()
