@@ -80,8 +80,8 @@ export type SessionInfo = {
   passToken: string
   stsUrl: string
   followUrl: string
-  'kuaishou.live.web_st': string
   userId: number
+  'kuaishou.live.web_st': string
   'kuaishou.live.web.at': string
 }
 const callback = (qrToken: string, sid: string): Promise<SessionInfo> => {
@@ -105,7 +105,7 @@ type OnScanQrCode = (img: string) => void
 const login = (onScanQrCode: OnScanQrCode): Promise<SessionInfo> => {
   return getQrCode()
     .then((qr) => {
-      onScanQrCode?.(qr.imageData)
+      onScanQrCode?.(`data:image/png;base64,${qr.imageData}`)
       return qr
     })
     .then((qr) => {

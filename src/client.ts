@@ -74,7 +74,7 @@ export type Packet = {
 
 export default abstract class Client extends EventEmiter {
   roomID: ID
-  static platform?: string
+  platform?: string
   client?: WebSocket
   constructor(roomID: ID) {
     super()
@@ -83,7 +83,7 @@ export default abstract class Client extends EventEmiter {
   }
 
   roomInfo(): string {
-    return `${Client.platform || ''}平台，${this.roomID}房间`
+    return `${this.platform || ''}平台，${this.roomID}房间`
   }
 
   stop(): void {
