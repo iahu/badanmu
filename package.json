@@ -6,7 +6,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "cli": "ts-node ./src/cli.ts",
-    "prebuild": "rm -rf dist",
     "build": "tsc",
     "dev": "cross-env NODE_ENV=developement nodemon ./src/server.ts",
     "prestart": "npm run build",
