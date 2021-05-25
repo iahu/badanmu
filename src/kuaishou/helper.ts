@@ -4,6 +4,9 @@ import puppeteer from 'puppeteer'
 
 import { ID } from '../client'
 
+const ua =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51'
+
 export const getPageId = (len = 16): string => {
   const seed = '-_zyxwvutsrqponmlkjihgfedcba9876543210ZYXWVUTSRQPONMLKJIHGFEDCBA'
 
@@ -71,14 +74,7 @@ export const getTokenInfo = (cookie?: string): Promise<TokenInfo> => {
     'passToken=ChNwYXNzcG9ydC5wYXNzLXRva2VuErABjH8SsNCmzTUfY2VUfjTgtuM4t2xeHJ72cwefGy-MfNniM7KE1p5mPxInCENdjjAPFel0rbYbj7zr8YBtKgKGiymkJ-Tl0l0SZGBCFG5cvL-cmPAvzUXcPoiO2h-t9MaTfbQK0vQZwq3bjXmHtAOaWcGT-liE6zENkPI4T37S0I6vvooxFMPe-tvbzqN8EQHCcc19k55Y6cK7VgZt_nyq2h2Bpum9y-sjAWLhP6OZQ3gaEqTfGfUjaES9oBVZA08VrH567CIgIeL4BjOcjkmjdpEtHLEzGRImYWxBgGtpDoeDpBUnE0goBTAB; userId=1736972579'
   return fetch('https://id.kuaishou.com/pass/kuaishou/login/passToken', {
     headers: {
-      accept: '*/*',
-      'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
       'content-type': 'application/x-www-form-urlencoded',
-      'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"',
-      'sec-ch-ua-mobile': '?0',
-      'sec-fetch-dest': 'empty',
-      'sec-fetch-mode': 'cors',
-      'sec-fetch-site': 'same-site',
       Cookie: mergedCooke,
     },
     body: 'sid=kuaishou.live.web',
@@ -106,25 +102,13 @@ export const getDid = (): Promise<string> => {
     .then((d) => d.did)
 }
 
-export const getLiveStreamId = (roomID: ID, cookie: string): Promise<string> => {
+export const getLiveStreamId = (roomID: ID, Cookie: string): Promise<string> => {
   return fetch(`https://live.kuaishou.com/u/${roomID}`, {
     headers: {
-      Connection: 'keep-alive',
-      'Cache-Control': 'max-age=0',
-      'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"',
-      'sec-ch-ua-mobile': '?0',
-      DNT: '1',
-      'Upgrade-Insecure-Requests': '1',
-      'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1 Safari/605.1.15',
-      Accept:
+      accept:
         'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-      'Sec-Fetch-Site': 'none',
-      'Sec-Fetch-Mode': 'navigate',
-      'Sec-Fetch-User': '?1',
-      'Sec-Fetch-Dest': 'document',
-      'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
-      Cookie: cookie,
+      'User-Agent': ua,
+      Cookie,
     },
     method: 'GET',
   })
@@ -147,24 +131,19 @@ export type WebSocketInfo = {
 export const getLiveDetail = (roomId: ID, cookie: string): Promise<string> => {
   return fetch('https://live.kuaishou.com/graphql', {
     headers: {
-      accept: '*/*',
-      'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
-      'content-type': 'application/json',
-      'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"',
-      'sec-ch-ua-mobile': '?0',
-      'sec-fetch-dest': 'empty',
-      'sec-fetch-mode': 'cors',
-      'sec-fetch-site': 'same-origin',
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.122 Safari/537.36',
+      'Content-Type': 'application/json;charset=UTF-8',
       cookie,
     },
-    body: `{"operationName":"LiveDetail","variables":{"principalId":"${roomId}"},"query":"query LiveDetail($principalId: String) {\\n  liveDetail(principalId: $principalId) {\\n    liveStream\\n}\\n}\\n"}`,
+    body: `{"operationName":"LiveDetail","variables":{"principalId":"${roomId}"},"query":"query LiveDetail($principalId: String) {\\n  liveDetail(principalId: $principalId) {liveStream}\\n}\\n"}`,
     method: 'POST',
   })
     .then((t) => t.json())
     .then((r) => r.data?.webLiveDetail?.liveStream?.liveStreamId)
 }
 
-export const getWebSocketInfo = (liveStreamId: string, cookie: string): Promise<WebSocketInfo> => {
+export const getWebSocketInfo = (liveStreamId: string, Cookie: string): Promise<WebSocketInfo> => {
   return fetch('https://live.kuaishou.com/live_graphql', {
     headers: {
       accept: '*/*',
@@ -175,11 +154,15 @@ export const getWebSocketInfo = (liveStreamId: string, cookie: string): Promise<
       'sec-fetch-dest': 'empty',
       'sec-fetch-mode': 'cors',
       'sec-fetch-site': 'same-origin',
-      cookie,
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1 Safari/605.1.15',
+      Cookie,
     },
     body: `{"operationName":"WebSocketInfoQuery","variables":{"liveStreamId":"${liveStreamId}"},"query":"query WebSocketInfoQuery($liveStreamId: String) {\\n  webSocketInfo(liveStreamId: $liveStreamId) {\\n    token\\n    webSocketUrls\\n    __typename\\n  }\\n}\\n"}`,
     method: 'POST',
-  }).then((t) => t.json())
+  })
+    .then((t) => t.json())
+    .then((r) => r?.data?.webSocketInfo)
 }
 
 export type Maybe<T> = T | null | undefined

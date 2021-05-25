@@ -1,20 +1,11 @@
 import WebSocket from 'ws'
 import protobuf from 'protobufjs'
 
-import {
-  PageInfo,
-  getLiveDetail,
-  getLiveStreamId,
-  getPageId,
-  getPageInfo,
-  getTokenInfo,
-  getWebSocketInfo,
-  makeCookie,
-  parseCookie,
-} from './helper'
+import { PageInfo, getLiveStreamId, getPageId, getTokenInfo, getWebSocketInfo, makeCookie } from './helper'
 import { cookies } from './config'
 import { log2 } from '../log'
 import Client, { ID } from '../client'
+import login, { SessionInfo } from './login'
 import protoJson from './kuaishou.proto.json'
 
 const pb = protobuf.Root.fromJSON(protoJson)
@@ -50,13 +41,23 @@ export default class Kuaishou extends Client {
   stream_id?: string
   intervalId?: NodeJS.Timeout
   pageInfo?: PageInfo
+  sessionInfo?: SessionInfo
 
   constructor(roomID: ID) {
     super(roomID)
 
+    // this.login()
+
     this.start(roomID).catch((e) => {
       this.emit('error', e)
       this.emit('close', 0, e)
+    })
+  }
+
+  login = (): void => {
+    login(this.requireLogin).then((session) => {
+      console.log('session', session)
+      this.sessionInfo = session
     })
   }
 
@@ -70,31 +71,18 @@ export default class Kuaishou extends Client {
 
     const mergedCookies = {
       ...cookies,
-      did: tokenInfo.cookie.did,
-      passToken: tokenInfo.passToken,
+      ...tokenInfo.cookie,
       userId: tokenInfo.userId,
       'kuaishou.live.web_st': tokenInfo['kuaishou.live.web_st'],
       'kuaishou.live.web.at': tokenInfo['kuaishou.live.web.at'],
     }
-    const cookie = makeCookie(tokenInfo.cookie)
 
-    // const pageInfo = await getPageInfo(roomID)
-    // const { cookie } = pageInfo
-    // const pageCookies = parseCookie(pageInfo.cookie)
-    const streamCookie = makeCookie({
-      did: mergedCookies.did,
-      userId: mergedCookies.userId,
-      'kuaishou.live.web_st': mergedCookies['kuaishou.live.web_st'],
-    })
+    const cookie = makeCookie(mergedCookies)
 
-    const liveDetail = await getLiveDetail(roomID, cookie)
-    console.log('what', liveDetail)
-
-    const liveStreamId = await getLiveStreamId(roomID, streamCookie)
-    console.log('liveStreamId', liveStreamId)
+    const liveStreamId = await getLiveStreamId(roomID, cookie)
     if (!liveStreamId) {
       console.log('没获取到 liveStreamId')
-      // return Promise.reject('没获取到 liveStreamId')
+      return Promise.reject('没获取到 liveStreamId')
     }
 
     const wsInfo = await getWebSocketInfo(liveStreamId, cookie)
@@ -125,17 +113,25 @@ export default class Kuaishou extends Client {
       return undefined
     }
 
-    const client = new WebSocket(url)
+    const client = new WebSocket(url, {
+      headers: {
+        Cookie: 'userId=1736972579; client_key=65890b29; clientid=3; did=web_0cdd6cd1840f8db9adc2dab65dd82830',
+      },
+    })
     log2.info(this.roomInfo(), 'ws 创建成功', url)
 
     const payload = { liveStreamId, token, pageId }
+    console.log('payload', payload)
     client.on('open', () => {
       this.emit('open')
       this.send({ type: 'CS_ENTER_ROOM', payload })
-      this.heartbeat()
+      setTimeout(() => this.heartbeat(), 20000)
     })
 
-    client.on('close', (has_error, reason) => this.emit('close', has_error, reason))
+    client.on('close', (has_error, reason) => {
+      this.intervalId && clearInterval(this.intervalId)
+      this.emit('close', has_error, reason)
+    })
     client.on('error', (error) => this.emit('error', error))
     client.on('message', (msg) => this.emit('message', msg as any))
 
@@ -145,15 +141,22 @@ export default class Kuaishou extends Client {
   send = (payload: SendPayload): void => {
     const { type } = payload
     const { key, value } = pbMap[type]
+    let err = value.verify(payload.payload || payload)
+    if (err) {
+      throw err
+    }
     const payloadBuf = value.encode(payload.payload || payload).finish()
+    err = socketMessagePb.verify({ payloadType: key, payload: payloadBuf })
+    if (err) {
+      throw err
+    }
     const msgBuf = socketMessagePb.encode({ payloadType: key, payload: payloadBuf }).finish()
-
-    this.client?.send(msgBuf.buffer)
+    this.client?.send(msgBuf.slice().buffer)
   }
 
   heartbeat = (): void => {
     this.intervalId = setInterval(() => {
       this.send({ type: 'CS_HEARTBEAT', timestamp: Date.now().valueOf() })
-    }, 30000)
+    }, 20000)
   }
 }
