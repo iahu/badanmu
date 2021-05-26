@@ -55,10 +55,12 @@ export default class TestClient extends EventEmitter {
 
   clientSize(): void {
     this.ws.on('open', () => {
+      console.log('ws opened')
       this.ws.send(JSON.stringify({ type: 'clientSize' }))
     })
     this.ws.on('message', (msg) => {
       const data = JSON.parse(msg.toString('utf8'))
+      console.log('received ws message', msg)
       if (data.type === 'clientSize') {
         console.info(msg)
         this.ws.close()

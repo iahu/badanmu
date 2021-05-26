@@ -26,12 +26,6 @@ ws.on('close', console.log)
 ws.on('message', console.info)
 ```
 
-## 测试客户端
-
-```sh
-npm run test-client <platform> <roomId>
-```
-
 ## 消息格式说明
 
 ```ts

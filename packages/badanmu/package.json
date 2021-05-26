@@ -10,7 +10,8 @@
     "dev": "cross-env NODE_ENV=developement nodemon ./src/server.ts",
     "prestart": "npm run build",
     "start": "cross-env NODE_ENV=production node ./dist/server.js",
-    "test-client": "ts-node ./test-client/index.ts"
+    "dev-client": "npx test-client",
+    "prod-client": "cross-env NODE_ENV=production npx test-client"
   },
   "keywords": [],
   "author": "",
@@ -39,6 +40,7 @@
     "eslint-config-prettier": "^8.3.0",
     "nodemon": "^2.0.7",
     "prettier": "^2.2.1",
+    "test-client": "^1.0.0",
     "ts-node": "^9.1.1"
   }
 }
