@@ -2,11 +2,13 @@
   "name": "test-client",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "bin": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prod": "cross-env NODE_ENV=production ts-node index.ts",
-    "dev": "cross-env NODE_ENV=development ts-node index.ts"
+    "build": "tsc",
+    "prod": "cross-env NODE_ENV=production ts-node ./src/index.ts",
+    "dev": "cross-env NODE_ENV=development ts-node ./src/index.ts"
   },
   "author": "",
   "license": "ISC",

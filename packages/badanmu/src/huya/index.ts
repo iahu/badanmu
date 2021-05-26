@@ -71,6 +71,7 @@ export default class Huya extends Client {
       .catch((e) => {
         log2.log('出错了')
         log2.error(e)
+        this.emit('error', e)
       })
   }
 
