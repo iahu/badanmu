@@ -1,5 +1,6 @@
 import { Gift, Comment } from '../client'
 import { MessageType } from './packet'
+import { uuid } from '../helper'
 import giftIdNameMap from './gift-id-name-map.json'
 
 const getGiftName = (id: string) => {
@@ -27,6 +28,7 @@ const parseComment = (rawMsg: Msg): Comment => {
     data: txt as string,
     ts: Date.now(),
     roomId: rid,
+    uuid: uuid(),
   }
 }
 
@@ -46,6 +48,7 @@ const parseGift = (rawMsg: Msg): Gift => {
     comboTimes: 1,
     commonType: 200,
     ts: Date.now(),
+    uuid: uuid(),
     roomId: rid,
     userInfo: {
       userName: nn,

@@ -127,7 +127,7 @@ const main = (port: number) => {
           ws.send('参数错误')
         }
       } else if (type === 'clientSize') {
-        ws.send(JSON.stringify({ type: 'clientSize', data: server.clients.size }))
+        ws.send(stringify({ type: 'clientSize', data: server.clients.size }))
       } else {
         log.info('其它消息', message)
       }

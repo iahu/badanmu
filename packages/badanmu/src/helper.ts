@@ -24,4 +24,21 @@ export const getCommonType = (comment: string): CommonType => {
   }
 }
 
-export const stringify = (value: unknown): string => JSON.stringify(value)
+export const stringify = (value: unknown): string => {
+  if (value === '') {
+    return ''
+  }
+
+  try {
+    return JSON.stringify(value)
+  } catch (e) {
+    console.error(e)
+    return ''
+  }
+}
+
+export const uuid = (base?: number): string => {
+  const now = base ?? Date.now()
+  const rand = Math.floor(Math.random() * 99999 + 999)
+  return [now, rand].map((n) => n.toString(16)).join('_')
+}
