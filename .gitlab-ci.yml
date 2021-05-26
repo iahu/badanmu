@@ -1,0 +1,20 @@
+stages:
+  - install
+  - build
+
+install:
+  stage: install
+  tags:
+    - s
+  only:
+    refs:
+      - merge_requests
+  script:
+    - yarn install
+
+build:
+  stage: build
+  tags:
+    - s
+  script:
+    - yarn workspace badanmu build
