@@ -1,4 +1,5 @@
 import { Gift, Comment } from '../client'
+import { uuid } from '../helper'
 
 type GiftMsg = {
   /**
@@ -63,6 +64,7 @@ export const getGiftMsg = (packet: { code?: number; body?: GiftMsg }): Gift => {
 
     code,
     ts: Date.now(),
+    uuid: uuid(),
     userInfo: {
       userName: sSenderNick,
       userId: lSenderUid,
@@ -93,5 +95,6 @@ export const getCommetMsg = (packet: { code?: number; body?: Record<string, any>
     },
     ts: Date.now(),
     commonType: -1,
+    uuid: uuid(),
   }
 }

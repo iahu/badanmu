@@ -1,5 +1,7 @@
 import pako from 'pako'
+
 import { Comment, Gift } from '../client'
+import { uuid } from '../helper'
 
 /**
  * 回传消息数据包
@@ -99,6 +101,7 @@ export const parseComment = (rawMsg: any[]): Comment => {
     data: rawMsg[1],
     playerName: rawMsg[2][1],
     ts: Date.now(),
+    uuid: uuid(),
   }
 }
 
@@ -118,5 +121,6 @@ export const parseGift = (rawMsg: Record<string, any>): Gift => {
     comboTimes: super_batch_gift_num || 1,
     data: `礼物：${giftName} ${num}个`,
     batchId: batch_combo_id,
+    uuid: uuid(),
   }
 }

@@ -1,6 +1,5 @@
 import EventEmiter from 'events'
 import WebSocket from 'ws'
-import querystring from 'querystring'
 
 export type ID = number | string
 
@@ -27,6 +26,7 @@ interface Msg {
   playerName: string
   commonType: number
 
+  uuid: string
   ts: number
   userInfo?: UserInfo
   nobel?: Partial<Noble>
