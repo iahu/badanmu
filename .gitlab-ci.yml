@@ -11,6 +11,9 @@ cache:
 
 install:
   stage: install
+  only:
+    refs:
+      - master
   tags:
     - hub
   script:
@@ -18,6 +21,9 @@ install:
 
 build:
   stage: build
+  only:
+    refs:
+      - master
   tags:
     - hub
   script:
@@ -25,8 +31,14 @@ build:
 
 deploy:
   stage: deploy
+  only:
+    refs:
+      - master
   tags:
     - hub
   script:
-    - pwd
-    - mv ./ ~/Developer/gitlab-runner/
+    - echo "deploy"
+    # # 同步文件
+    # - rsync --delete -av --exclude="node_modules" --exclude="logs" --exclude="*.log" --exclude=".DS_Store" ./packages/badanmu/ bin@124.70.83.120:/cygdrive/c/webserver/badanmu-8000
+    # # 依次部署所有服务
+    # - ssh bin@124.70.83.120 'cd /cygdrive/c/webserver/badanmu/ && sh ./deploy.sh'
