@@ -4,12 +4,11 @@ stages:
   - build
   - deploy
 
-
-  cache:
-    key: ${CI_BUILD_REF_NAME}
-    paths:
-      - node_modules/
-      - packages/**/dist/
+cache:
+  key: ${CI_BUILD_REF_NAME}
+  paths:
+    - node_modules/
+    - packages/**/dist/
 
 install:
   stage: install
