@@ -2,16 +2,22 @@ stages:
   - install
   - build
 
+cache:
+  key: ${CI_BUILD_REF_NAME}
+  paths:
+    - node_modules/
+    - dist
+
 install:
   stage: install
   tags:
     - hub
   script:
-    - echo 'install'
+    - yarn install
 
 build:
   stage: build
   tags:
     - a
   script:
-    - echo 'build'
+    - yarn workspace badanmu build
