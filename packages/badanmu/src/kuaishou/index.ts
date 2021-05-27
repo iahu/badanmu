@@ -1,7 +1,7 @@
 import WebSocket from 'ws'
 import protobuf from 'protobufjs'
 
-import { PageInfo, getLiveStreamId, getPageId, getTokenInfo, getWebSocketInfo, makeCookie } from './helper'
+import { getLiveStreamId, getPageId, getTokenInfo, getWebSocketInfo, makeCookie } from './helper'
 import { cookies } from './config'
 import { log2 } from '../log'
 import Client, { ID } from '../client'
@@ -40,7 +40,6 @@ type ClientOption = {
 export default class Kuaishou extends Client {
   stream_id?: string
   intervalId?: NodeJS.Timeout
-  pageInfo?: PageInfo
   sessionInfo?: SessionInfo
 
   constructor(roomID: ID) {
