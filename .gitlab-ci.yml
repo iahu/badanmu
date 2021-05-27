@@ -4,9 +4,6 @@ stages:
   - build
   - deploy
 
-before_script:
-  - echo "\n开始执行"
-
 install:
   stage: install
   only:
