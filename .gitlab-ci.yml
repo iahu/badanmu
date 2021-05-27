@@ -4,12 +4,6 @@ stages:
   - build
   - deploy
 
-cache:
-  key: ${CI_BUILD_REF_NAME}
-  paths:
-    - node_modules/
-    - packages/**/dist
-
 before_script:
   - echo "\n开始执行"
 
@@ -23,6 +17,11 @@ install:
     - hub
   script:
     - yarn install
+  cache:
+    key: ${CI_BUILD_REF_NAME}
+    paths:
+      - node_modules/
+      - packages/**/dist
 
 build:
   stage: build
@@ -44,8 +43,7 @@ lint:
   tags:
     - hub
   script:
-    - yarn workspace badanmu lint
-  allow_failure: true
+    - yarn workspace badanmu lint --quiet
 
 deploy:
   stage: deploy
