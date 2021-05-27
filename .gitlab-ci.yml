@@ -4,6 +4,13 @@ stages:
   - build
   - deploy
 
+
+  cache:
+    key: ${CI_BUILD_REF_NAME}
+    paths:
+      - node_modules/
+      - packages/**/dist/
+
 install:
   stage: install
   only:
@@ -14,10 +21,6 @@ install:
     - hub
   script:
     - yarn install
-  cache:
-    key: ${CI_BUILD_REF_NAME}
-    paths:
-      - node_modules/
 
 build:
   stage: build
