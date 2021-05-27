@@ -16,6 +16,7 @@ install:
     refs:
       - master
       - merge_requests
+      - /^release-v\d(\d|\d\.\d)*$/i
   tags:
     - linux-runner
   script:
@@ -27,6 +28,7 @@ build:
     refs:
       - master
       - merge_requests
+      - /^release-v\d(\d|\d\.\d)*$/i
   tags:
     - linux-runner
   script:
@@ -38,6 +40,7 @@ lint:
     refs:
       - master
       - merge_requests
+      - /^release-v\d(\d|\d\.\d)*$/i
   tags:
     - linux-runner
   script:
@@ -48,7 +51,6 @@ deploy:
   only:
     refs:
       - /^release-v\d(\d|\d\.\d)*$/i
-      - master
       - web
       - tags
     changes:
