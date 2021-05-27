@@ -13,8 +13,6 @@ cache:
 install:
   stage: install
   only:
-    tags:
-      - /^release-v(\d|\d+\.\d+)$/i
     refs:
       - master
       - merge_requests
@@ -26,8 +24,6 @@ install:
 build:
   stage: build
   only:
-    tags:
-      - /^release-v(\d|\d+\.\d+)$/i
     refs:
       - master
       - merge_requests
@@ -39,8 +35,6 @@ build:
 lint:
   stage: lint
   only:
-    tags:
-      - /^release-v(\d|\d+\.\d+)$/i
     refs:
       - master
       - merge_requests
@@ -52,10 +46,10 @@ lint:
 deploy:
   stage: deploy
   only:
-    tags:
-      - /^release-v(\d|\d+\.\d+)$/i
-    # refs:
-    #   - master
+    refs:
+      - /^release-v\d(\d|\d\.\d)*$/i
+      - master
+      - triggers
     changes:
       - packages/badanmu/src
   tags:
