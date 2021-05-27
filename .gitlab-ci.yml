@@ -32,7 +32,7 @@ build:
   tags:
     - linux-runner
   script:
-    - yarn workspace badanmu run build
+    - yarn workspace badanmu build
 
 lint:
   stage: lint
@@ -44,7 +44,7 @@ lint:
   tags:
     - linux-runner
   script:
-    - yarn workspace badanmu run lint --quiet
+    - yarn workspace badanmu lint --quiet
 
 deploy:
   stage: deploy
