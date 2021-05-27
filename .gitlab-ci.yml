@@ -20,6 +20,10 @@ install:
       - master
       - merge_requests
       - /^release-v\d(\d|\d\.\d)*$/i
+      - tags
+  except:
+    changes:
+      - '*.md'
   tags:
     - linux-runner
   script:
@@ -32,6 +36,7 @@ build:
       - master
       - merge_requests
       - /^release-v\d(\d|\d\.\d)*$/i
+      - tags
   tags:
     - linux-runner
   script:
@@ -44,6 +49,7 @@ lint:
       - master
       - merge_requests
       - /^release-v\d(\d|\d\.\d)*$/i
+      - tags
   tags:
     - linux-runner
   script:
