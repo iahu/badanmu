@@ -11,7 +11,8 @@ cache:
     - packages/**/dist/
 
 before_script:
-  - export PATH=$PATH:./node_modules/.bin:./packages/badanmu/.bin/
+  - ls ./node_modules/.bin
+  - export PATH=$PATH:./node_modules/.bin:./packages/badanmu/.bin
 
 install:
   stage: install
