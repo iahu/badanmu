@@ -2,23 +2,6 @@ import WebSocket from 'ws'
 import EventEmitter from 'events'
 
 export type MsgType = 'login' | 'danmu'
-export interface SocketData {
-  type: MsgType
-  platform: string
-  roomId: string
-  gameModel: number
-  data: string
-}
-
-const socketData = (msg: Partial<SocketData>) => {
-  return JSON.stringify({
-    platform: '',
-    roomId: '',
-    gameModel: 0,
-    data: '',
-    ...msg,
-  })
-}
 
 export default class TestClient extends EventEmitter {
   private wsOrigin: string
@@ -43,27 +26,34 @@ export default class TestClient extends EventEmitter {
     const ws = this.ws
     ws.on('open', () => {
       console.log(`连接成功 ${platform}, ${roomId}`)
-      if (!this.pageHoldOn) {
-        this.pageHoldOn = true
-        ws.send(socketData({ type: 'login', platform, roomId }))
-      }
     })
     ws.on('error', console.error)
     ws.on('close', (e) => this.emit('close', e))
-    ws.on('message', console.info)
+    ws.on('message', (data) => {
+      const msg = JSON.parse(data.toString('utf8'))
+      if (msg.commonType === 1001) {
+        ws.send(JSON.stringify({ type: 'login', platform, roomId }))
+      } else {
+        console.info(data.toString('utf8'))
+      }
+    })
   }
 
   clientSize(): void {
     this.ws.on('open', () => {
       console.log('ws opened')
-      this.ws.send(JSON.stringify({ type: 'clientSize' }))
     })
-    this.ws.on('message', (msg) => {
-      const data = JSON.parse(msg.toString('utf8'))
-      console.log('received ws message', msg)
-      if (data.type === 'clientSize') {
-        console.info(msg)
+    this.ws.on('message', (data) => {
+      const msg = JSON.parse(data.toString('utf8'))
+      console.log('received ws message', data)
+      if (msg.commonType === 1001) {
+        console.log('send clienSize request')
+        this.ws.send(JSON.stringify({ type: 'clientSize' }))
+      } else if (msg.type === 'clientSize') {
+        console.info(data)
         this.ws.close()
+      } else {
+        console.info(data.toString('utf8'))
       }
     })
   }

@@ -31,7 +31,7 @@ interface Msg {
   userInfo?: UserInfo
   nobel?: Partial<Noble>
 
-  [k: string]: any
+  [k: string]: unknown
 }
 
 export interface Comment extends Msg {

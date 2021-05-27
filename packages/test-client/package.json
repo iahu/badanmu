@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "prod": "cross-env NODE_ENV=production ts-node ./src/index.ts",
-    "dev": "cross-env NODE_ENV=development ts-node ./src/index.ts"
+    "dev": "cross-env NODE_ENV=development ts-node ./src/index.ts",
+    "lint": "eslint ./src --ext .js,.ts --fix"
   },
   "author": "",
   "license": "ISC",
