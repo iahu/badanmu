@@ -32,7 +32,7 @@ build:
   tags:
     - linux-runner
   script:
-    - yarn workspace badanmu build
+    - yarn workspace badanmu run build
 
 lint:
   stage: lint
@@ -44,10 +44,11 @@ lint:
   tags:
     - linux-runner
   script:
-    - yarn workspace badanmu lint --quiet
+    - yarn workspace badanmu run lint --quiet
 
 deploy:
   stage: deploy
+  when: manual
   only:
     refs:
       - /^release-v\d(\d|\d\.\d)*$/i
