@@ -1,6 +1,7 @@
 stages:
   - install
   - build
+  - deploy
 
 cache:
   key: ${CI_BUILD_REF_NAME}
@@ -21,3 +22,10 @@ build:
     - hub
   script:
     - yarn workspace badanmu build
+
+deploy:
+  stage: deploy
+  tags:
+    - hub
+  script:
+    - mv -r ./ ~/Developer/gitlab-runner/
