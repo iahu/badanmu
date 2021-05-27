@@ -11,7 +11,6 @@ cache:
     - packages/**/dist/
 
 before_script:
-  - ls ./node_modules/.bin
   - export PATH=$PATH:$PWD/node_modules/.bin:$PWD/packages/badanmu/node_modules/.bin
 
 install:
