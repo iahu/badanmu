@@ -18,6 +18,6 @@ install:
 build:
   stage: build
   tags:
-    - a
+    - hub
   script:
     - yarn workspace badanmu build
