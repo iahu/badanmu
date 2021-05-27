@@ -28,4 +28,5 @@ deploy:
   tags:
     - hub
   script:
-    - mv -r ./ ~/Developer/gitlab-runner/
+    - pwd
+    - mv ./ ~/Developer/gitlab-runner/
