@@ -93,6 +93,17 @@ export type Message = Comment | Gift | SystemInfo
 
 [查看详情](http://gitlab.egret-inner.com/hushuibin/badanmu/blob/master/src/client.ts#L5-64)
 
+## 发布
+
+项目通过 tag 的形式发布
+
+```sh
+# 打 tag，tag 必须符合以 'release-v' 开始，后跟一个数字版本
+git tag release-v0.1
+# 提交 tag，触发自动部署 CI 脚本
+git push origin release-v0.1
+```
+
 ## 部署
 
 此项目使用 pm2 部署，并配置 [nginx](./badnmu.conf) 来代理分发服务
