@@ -11,7 +11,8 @@
     "prestart": "npm run build",
     "start": "cross-env NODE_ENV=production node ./dist/server.js",
     "dev-client": "npx test-client",
-    "prod-client": "cross-env NODE_ENV=production npx test-client"
+    "prod-client": "cross-env NODE_ENV=production npx test-client",
+    "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx --fix"
   },
   "keywords": [],
   "author": "",

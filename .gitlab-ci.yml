@@ -1,5 +1,6 @@
 stages:
   - install
+  - lint
   - build
   - deploy
 
@@ -8,6 +9,9 @@ cache:
   paths:
     - node_modules/
     - packages/**/dist
+
+before_script:
+  - echo "\n开始执行"
 
 install:
   stage: install
@@ -30,6 +34,18 @@ build:
     - hub
   script:
     - yarn workspace badanmu build
+
+lint:
+  stage: lint
+  only:
+    refs:
+      - master
+      - merge_requests
+  tags:
+    - hub
+  script:
+    - yarn workspace badanmu lint
+  allow_failure: true
 
 deploy:
   stage: deploy
