@@ -47,6 +47,7 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
 
   if (!upstream) return
 
+  upstream.platform = platform
   const roomInfo = upstream.roomInfo()
   log.info(`开始监听${roomInfo}`)
 

@@ -34,7 +34,6 @@ const userAgent =
   'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Mobile Safari/537.36'
 export default class Huya extends Client {
   static url = 'wss://cdnws.api.huya.com'
-  static platform = 'huya'
   platform_id = '10002'
   clientName = '接收线程'
   client?: WebSocket
@@ -117,6 +116,7 @@ export default class Huya extends Client {
     client.on('close', (code, reason) => {
       log2.log('close', code, reason)
       this.emit('close', code, reason)
+      this.client?.close()
     })
 
     client.on('message', (data) => {

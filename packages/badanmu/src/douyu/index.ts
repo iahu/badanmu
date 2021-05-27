@@ -13,7 +13,6 @@ export default class Douyu extends Client {
     return `wss://danmuproxy.douyu.com:${port}/`
   }
 
-  static platform = 'douyu'
   static HEARBEAT_INTERVAL = 45
   private _heartbeatTask: NodeJS.Timeout | undefined
   public client: WebSocket
@@ -55,6 +54,7 @@ export default class Douyu extends Client {
     this.client.on('close', (code, reason) => {
       this.cleaup()
       this.emit('close', code, reason)
+      this.client.close()
     })
   }
 
