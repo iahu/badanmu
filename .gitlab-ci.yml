@@ -17,7 +17,6 @@ install:
   stage: install
   only:
     refs:
-      - master
       - merge_requests
       - /^release-v\d(\d|\d\.\d)*$/i
       - tags
@@ -33,7 +32,6 @@ build:
   stage: build
   only:
     refs:
-      - master
       - merge_requests
       - /^release-v\d(\d|\d\.\d)*$/i
       - tags
@@ -46,7 +44,6 @@ lint:
   stage: lint
   only:
     refs:
-      - master
       - merge_requests
       - /^release-v\d(\d|\d\.\d)*$/i
       - tags
