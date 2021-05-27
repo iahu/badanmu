@@ -1,6 +1,5 @@
 import { Writer } from 'protobufjs'
 import fetch from 'node-fetch'
-import puppeteer from 'puppeteer'
 
 import { ID } from '../client'
 
@@ -163,43 +162,4 @@ export const getWebSocketInfo = (liveStreamId: string, Cookie: string): Promise<
   })
     .then((t) => t.json())
     .then((r) => r?.data?.webSocketInfo)
-}
-
-export type Maybe<T> = T | null | undefined
-type RequireLogin = (dataUrl: string) => void
-export type PageInfo = {
-  pageId?: Maybe<string>
-  liveStreamId?: Maybe<string>
-  cookie: string
-}
-
-export const getPageInfo = async (roomId: string | number, requireLogin?: RequireLogin): Promise<PageInfo> => {
-  const browser = await puppeteer.launch({ headless: false })
-  const page = await browser.newPage()
-  await page.goto(`https://live.kuaishou.com/u/${roomId}`)
-  await page.waitForSelector('.no-login .login')
-  const el = await page.$('.no-login .login')
-  await el?.evaluate((e) => e.click())
-  const qrimg = await page.waitForSelector('.qrcode.qr-login-code img', { visible: false })
-  await qrimg?.click()
-  const propSrc = await qrimg?.getProperty('src')
-  const dataUrl = await propSrc?.jsonValue()
-  requireLogin?.(dataUrl as string)
-
-  await page.waitForSelector('.user-info-profile[src]', { timeout: 120 * 1000, visible: false })
-  await page.reload()
-
-  const pageInfo = await page.evaluate(() => {
-    return {
-      liveStreamId: JSON.parse(sessionStorage.getItem('kslive.log.page_live_stream_id') || '""'),
-      pageId: JSON.parse(sessionStorage.getItem('kslive.log.page_id') || '""'),
-    }
-  })
-
-  const cookies = await page.cookies()
-  const cookie = cookies.map((c) => `${c.name}=${c.value}`).join('; ')
-
-  setTimeout(() => browser.close(), 100)
-
-  return Promise.resolve({ ...pageInfo, cookie })
 }
