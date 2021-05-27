@@ -5,16 +5,13 @@ stages:
 install:
   stage: install
   tags:
-    - a
-  only:
-    refs:
-      - merge_requests
+    - hub
   script:
-    - yarn install
+    - echo 'install'
 
 build:
   stage: build
   tags:
     - a
   script:
-    - yarn workspace badanmu build
+    - echo 'build'
