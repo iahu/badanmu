@@ -45,9 +45,7 @@ function decodePayload(t: Uint8Array) {
     decodeLib.codec.arrayBuffer.fromBits(
       decodeLib.mode.cbc.decrypt(
         m,
-        (function (t) {
-          return decodeLib.codec.arrayBuffer.toBits(t.buffer.slice(t.byteOffset, t.byteLength + t.byteOffset))
-        })(t),
+        decodeLib.codec.arrayBuffer.toBits(t.buffer.slice(t.byteOffset, t.byteLength + t.byteOffset)),
         v,
         []
       ),

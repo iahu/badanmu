@@ -60,14 +60,11 @@ export default class TestClient extends EventEmitter {
     this.ws.on('open', () => {
       console.log('ws opened')
     })
-    this.ws.on('message', (data) => {
-      const msg = JSON.parse(data.toString('utf8'))
-      console.log('received ws message', data)
-      if (msg.commonType === 1001) {
-        console.log('send clienSize request')
-        this.ws.send(JSON.stringify({ type: 'clientSize' }))
-      } else if (msg.type === 'clientSize') {
-        console.info(data)
+    this.ws.on('message', (msg) => {
+      const data = parseMsg(msg.toString('utf8'))
+      console.log('received ws message', msg)
+      if (data.type === 'clientSize') {
+        console.info(msg)
         this.ws.close()
       } else {
         console.info(data.toString('utf8'))
