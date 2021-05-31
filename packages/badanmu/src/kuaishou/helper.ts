@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 import { ID } from '../client'
 
 const ua =
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51'
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
 
 export const getPageId = (len = 16): string => {
   const seed = '-_zyxwvutsrqponmlkjihgfedcba9876543210ZYXWVUTSRQPONMLKJIHGFEDCBA'
@@ -101,22 +101,23 @@ export const getDid = (): Promise<string> => {
     .then((d) => d.did)
 }
 
-export const getLiveStreamId = (roomID: ID, Cookie: string): Promise<string> => {
+export const getLiveStreamId = (roomID: ID, cookie: string): Promise<string> => {
   return fetch(`https://live.kuaishou.com/u/${roomID}`, {
     headers: {
       accept:
         'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
       'User-Agent': ua,
-      Cookie,
+      cookie,
     },
     method: 'GET',
   })
     .then((t) => t.text())
     .then((html) => {
-      const match = html.match(/live-stream-id="(\w+)"/)
+      const match = html.match(/live-stream-id="([^"]+)"/)
       if (match) {
         return match[1]
       }
+      console.log('what', html)
       return ''
     })
 }

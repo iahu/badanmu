@@ -18,4 +18,17 @@ module.exports = {
     'prefer-const': ['warn'],
     'no-control-regex': 'off',
   },
+  overrides: [
+    {
+      files: ['lib.js', 'kuaishou/*.js'],
+      rules: {
+        semi: 'off',
+        quotes: 'off',
+        'no-func-assign': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+        'no-global-assign': 'off',
+        '@typescript-eslint/no-this-alias': 'off',
+      },
+    },
+  ],
 }

@@ -73,17 +73,17 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
   upstream.once('close', (code, reason) => {
     cleanup()
     log.info(roomInfo, 'client closed', code, reason)
-    ws.send('close')
+    ws.send(stringify({ type: 'close', code, data: reason }))
     ws.close()
   })
   upstream.on('error', (e) => {
     cleanup()
     log.error(roomInfo, 'client error', e)
-    ws.send('error')
+    ws.send(stringify({ type: 'close', code: 1, data: e.message }))
   })
 
-  ws.once('close', () => {
-    log.info(roomInfo, 'closed')
+  ws.once('close', (code, reason) => {
+    log.info(roomInfo, 'closed', code, reason)
     cleanup()
   })
 

@@ -1,8 +1,9 @@
 import WebSocket from 'ws'
 import protobuf from 'protobufjs'
 
-import { getLiveStreamId, getPageId, getTokenInfo, getWebSocketInfo, makeCookie } from './helper'
 import { cookies } from './config'
+import { decoeMsg } from './decode'
+import { getLiveStreamId, getPageId, getTokenInfo, getWebSocketInfo, makeCookie } from './helper'
 import { log2 } from '../log'
 import Client, { ID } from '../client'
 import login, { SessionInfo } from './login'
@@ -120,19 +121,50 @@ export default class Kuaishou extends Client {
     log2.info(this.roomInfo(), 'ws 创建成功', url)
 
     const payload = { liveStreamId, token, pageId }
-    console.log('payload', payload)
     client.on('open', () => {
       this.emit('open')
-      this.send({ type: 'CS_ENTER_ROOM', payload })
-      setTimeout(() => this.heartbeat(), 20000)
+      setTimeout(() => {
+        this.send({ type: 'CS_ENTER_ROOM', payload })
+        this.heartbeat()
+      }, 1000)
     })
 
-    client.on('close', (has_error, reason) => {
+    client.on('close', (code, reason) => {
       this.intervalId && clearInterval(this.intervalId)
-      this.emit('close', has_error, reason)
+      this.emit('close', code, reason)
+      // client.close()
+      log2.log('client closed', code, reason)
     })
     client.on('error', (error) => this.emit('error', error))
-    client.on('message', (msg) => this.emit('message', msg as any))
+    client.on('message', (data) => {
+      const buffer = Buffer.from(data as ArrayBufferLike)
+      const msg = decoeMsg(buffer)
+      console.log('msg', buffer.byteLength, msg)
+      if (!msg) {
+        return
+      }
+
+      switch (msg.type) {
+        case 'SC_ERROR': {
+          log2.error('SC_ERROR', msg)
+          this.emit('close', -1, 'SC_ERROR')
+          this.client?.close()
+          break
+        }
+        case 'SC_ENTER_ROOM_ACK': {
+          log2.debug('SC_ENTER_ROOM_ACK', msg.payload.heartbeatIntervalMs.low)
+          this.heartbeat(msg.payload.heartbeatIntervalMs.low)
+          break
+        }
+        case 'SC_FEED_PUSH': {
+          console.log('push msg', msg.payload)
+          break
+        }
+        default:
+          log2.debug('unkown msg', msg)
+          break
+      }
+    })
 
     return client
   }
@@ -150,12 +182,20 @@ export default class Kuaishou extends Client {
       throw err
     }
     const msgBuf = socketMessagePb.encode({ payloadType: key, payload: payloadBuf }).finish()
-    this.client?.send(msgBuf.slice().buffer)
+    console.log('will send', msgBuf.buffer.byteLength, 'bytes data')
+    this.client?.send(msgBuf)
   }
 
-  heartbeat = (): void => {
+  heartbeat = (interval = 20000): void => {
+    if (!this.client) {
+      return
+    }
     this.intervalId = setInterval(() => {
-      this.send({ type: 'CS_HEARTBEAT', timestamp: Date.now().valueOf() })
-    }, 20000)
+      if (!this.client?.CLOSED) {
+        this.send({ type: 'CS_HEARTBEAT', timestamp: Date.now().valueOf() })
+      } else if (this.intervalId) {
+        clearInterval(this.intervalId)
+      }
+    }, interval)
   }
 }

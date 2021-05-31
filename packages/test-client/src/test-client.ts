@@ -3,6 +3,19 @@ import EventEmitter from 'events'
 
 export type MsgType = 'login' | 'danmu'
 
+const parseMsg = (data: string) => {
+  if (data.startsWith('{') || data.startsWith('[')) {
+    try {
+      return JSON.parse(data)
+    } catch (e) {
+      console.error('parseMsg Error', e)
+      return null
+    }
+  } else {
+    return data
+  }
+}
+
 export default class TestClient extends EventEmitter {
   private wsOrigin: string
   private pageHoldOn = false
@@ -15,7 +28,11 @@ export default class TestClient extends EventEmitter {
       wsOrigin = 'ws://localhost:8181'
     }
     this.wsOrigin = wsOrigin
-    this.ws = new WebSocket(this.wsOrigin)
+    const ws = new WebSocket(this.wsOrigin)
+    this.ws = ws
+
+    ws.on('error', console.error)
+    ws.on('close', () => console.log('closed'))
   }
 
   /**
