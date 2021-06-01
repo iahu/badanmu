@@ -1,1 +1,3 @@
 src/huya/lib.js
+dist/
+node_modules/
