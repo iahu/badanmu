@@ -77,7 +77,7 @@ export default class Bilibili extends Client {
   public client?: WebSocket
 
   constructor(roomID: ID) {
-    super(roomID)
+    super('bilibili', roomID)
 
     const onOpen = () => {
       this.emit('open')

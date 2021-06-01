@@ -2,7 +2,7 @@ import WebSocket from 'ws'
 import protobuf from 'protobufjs'
 
 import regeneratorRuntime from './regenerator-runtime'
-import protoJSON from './kuaishou.proto.json'
+import protoJSON from '../kuaishou.proto.json'
 import EventEmitter from 'events'
 
 const b = protobuf.Root.fromJSON(protoJSON)

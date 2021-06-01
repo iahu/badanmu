@@ -50,7 +50,7 @@ export default class Huya extends Client {
   // _chat_list: List
 
   constructor(roomID: ID) {
-    super(roomID)
+    super('huya', roomID)
     this.nickname = ''
     this.cookies = ''
     this.startTime = Date.now()
