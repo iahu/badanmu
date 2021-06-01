@@ -52,8 +52,6 @@ export default class Kuaishou extends Client {
   constructor(roomID: ID) {
     super('kuaishou', roomID)
 
-    // this.login()
-
     this.start(roomID)
   }
 
@@ -101,7 +99,6 @@ export default class Kuaishou extends Client {
 
   async start(roomID: ID): Promise<void> {
     // const { webSocketUrls, token, liveStreamId } = await this.getWsParams(roomID)
-    //         livestreamid = 'ce2AgAVVXf8'
     const wsParams = {
       liveStreamId: 'ce2AgAVVXf8',
       webSocketUrls: ['wss://live-ws-pg-group8.kuaishou.com/websocket'],
