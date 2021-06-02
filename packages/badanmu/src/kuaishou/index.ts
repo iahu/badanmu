@@ -8,6 +8,7 @@ import { log2 } from '../log'
 import Client, { ID } from '../client'
 import login, { SessionInfo } from './login'
 import protoJson from './kuaishou.proto.json'
+import toArrayBuffer from '../huya/to-arraybuffer'
 
 const pb = protobuf.Root.fromJSON(protoJson)
 const socketMessagePb = pb.lookupType('SocketMessage')
@@ -135,8 +136,8 @@ export default class Kuaishou extends Client {
       this.emit('open')
       const pageId = getPageId()
       const payload = { liveStreamId, token, pageId }
+      this.send({ type: 'CS_ENTER_ROOM', payload })
       this.ping()
-      setTimeout(() => this.send({ type: 'CS_ENTER_ROOM', payload }), 1000)
     })
 
     client.on('close', (code, reason) => {
@@ -148,11 +149,10 @@ export default class Kuaishou extends Client {
     client.on('message', (data) => {
       const buffer = Buffer.from(data as ArrayBufferLike)
       const msg = decoeMsg(buffer)
+      console.log('msg', buffer.byteLength, msg)
       if (!msg) {
         return
       }
-
-      this.requestMsg()
 
       switch (msg.type) {
         case 'SC_ERROR': {
@@ -161,13 +161,21 @@ export default class Kuaishou extends Client {
           this.client?.close()
           break
         }
+        case 'SC_HEARTBEAT_ACK': {
+          console.log('what server ts', parseInt(msg.payload.timestamp))
+          console.log('what client ts', parseInt(msg.payload.clientTimestamp))
+          break
+        }
         case 'SC_ENTER_ROOM_ACK': {
-          log2.debug('SC_ENTER_ROOM_ACK', msg.payload.heartbeatIntervalMs.low)
-          this.heartbeat(msg.payload.heartbeatIntervalMs.low)
+          setTimeout(() => {
+            // reconnect
+            this.reconnect()
+          }, parseInt(msg.payload.minReconnectMs))
+          this.heartbeat(parseInt(msg.payload.heartbeatIntervalMs))
           break
         }
         case 'SC_FEED_PUSH': {
-          log2.log('push msg', msg.payload)
+          log2.log('push msg', JSON.stringify(msg.payload))
           break
         }
         default:
@@ -194,24 +202,28 @@ export default class Kuaishou extends Client {
     const msgBuf = socketMessagePb.encode({ payloadType: key, payload: payloadBuf }).finish()
     log2.info('will send', msgBuf.byteLength, 'bytes:', JSON.stringify(payload))
     this.client?.send(msgBuf)
+    log2.info('bufferAmount after send', this.client?.bufferedAmount)
   }
 
-  requestMsg = (): void => {
-    const payload = this.wsParams
+  reconnect = (): void => {
+    if (!this.wsParams) {
+      return
+    }
+    const { token, liveStreamId } = this.wsParams
     const pageId = getPageId()
+    const payload = { token, liveStreamId, pageId }
 
-    this.send({ type: 'CS_ENTER_ROOM', payload: { ...payload, pageId } })
+    this.send({ type: 'CS_ENTER_ROOM', payload })
   }
 
   ping = (): void => {
     this.send({ type: 'CS_HEARTBEAT', timestamp: Date.now().valueOf() })
   }
 
-  heartbeat = (interval = 20000): void => {
+  heartbeat = (interval = 2000): void => {
     if (!this.client) {
       return
     }
-    this.ping()
     this.intervalId = setInterval(() => {
       if (!this.client?.CLOSED) {
         this.ping()

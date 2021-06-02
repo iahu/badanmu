@@ -1,6 +1,6 @@
 export const cookies = {
   did: 'web_e1159ae92517bef1d92aec2a174f8bb7',
-  userId: 2363789227,
+  userId: 2373490657,
   'kuaishou.live.web_at':
     'ChRrdWFpc2hvdS5saXZlLndlYi5zdBKgAXG-PoTInIeZzCDnLcec6d_rzS9N9u1J8WJGMk7ncRVzwNXuXPXo3cjAJ7QTweyz7lnJhQijvxbB294E7YOjtHOVh7Xzn1cfH59GyObppLnnZjHRWEgbVKjfuU89RDzfDI2lkAJ8m0FC1cSIe6CbOWY17tMP_UG3nwzDlNCOsU1PNhPgYVe72VrnhxVq8MgwZa_atruB7sIgTrLjrYgU21caEgL1c1j1KEeWrOe8x-vTC5n9jyIgPMg9mWQwDWh8zgSoEYrWL3UsRaz5Av4-qTmQer7OGeUoBTAB;',
   'kuaishou.live.web_st':

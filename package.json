@@ -2,5 +2,10 @@
   "name": "badanmu-workspace",
   "version": "1.0.0",
   "private": true,
-  "workspaces": ["./packages/*"]
+  "workspaces": [
+    "./packages/*"
+  ],
+  "dependencies": {
+    "ws": "^7.4.6"
+  }
 }
