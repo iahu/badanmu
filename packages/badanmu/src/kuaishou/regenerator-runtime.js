@@ -207,11 +207,11 @@ var runtime = (function (exports) {
         // important to get this right, even though it requires care.
         previousPromise
           ? previousPromise.then(
-              callInvokeWithMethodAndArg,
-              // Avoid propagating failures to Promises returned by later
-              // invocations of the iterator.
-              callInvokeWithMethodAndArg
-            )
+            callInvokeWithMethodAndArg,
+            // Avoid propagating failures to Promises returned by later
+            // invocations of the iterator.
+            callInvokeWithMethodAndArg
+          )
           : callInvokeWithMethodAndArg())
     }
 
@@ -237,8 +237,8 @@ var runtime = (function (exports) {
     return exports.isGeneratorFunction(outerFn)
       ? iter // If outerFn is a generator, return the full iterator.
       : iter.next().then(function (result) {
-          return result.done ? result.value : iter.next()
-        })
+        return result.done ? result.value : iter.next()
+      })
   }
 
   function makeInvokeMethod(innerFn, self, context) {
@@ -342,7 +342,7 @@ var runtime = (function (exports) {
         }
 
         context.method = 'throw'
-        context.arg = new TypeError("The iterator does not provide a 'throw' method")
+        context.arg = new TypeError('The iterator does not provide a \'throw\' method')
       }
 
       return ContinueSentinel

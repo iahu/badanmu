@@ -1,3 +1,4 @@
 src/huya/lib.js
 dist/
 node_modules/
+src/kuaishou/*.js

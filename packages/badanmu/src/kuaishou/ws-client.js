@@ -28,13 +28,13 @@ function B(t) {
     (B =
       'function' == typeof Symbol && 'symbol' == typeof Symbol.iterator
         ? function (t) {
-            return typeof t
-          }
+          return typeof t
+        }
         : function (t) {
-            return t && 'function' == typeof Symbol && t.constructor === Symbol && t !== Symbol.prototype
-              ? 'symbol'
-              : typeof t
-          }),
+          return t && 'function' == typeof Symbol && t.constructor === Symbol && t !== Symbol.prototype
+            ? 'symbol'
+            : typeof t
+        }),
     B(t)
   )
 }
@@ -67,9 +67,9 @@ function z(t, e) {
   for (var n = 0; n < e.length; n++) {
     var r = e[n]
     ;(r.enumerable = r.enumerable || !1),
-      (r.configurable = !0),
-      'value' in r && (r.writable = !0),
-      Object.defineProperty(t, r.key, r)
+    (r.configurable = !0),
+    'value' in r && (r.writable = !0),
+    Object.defineProperty(t, r.key, r)
   }
 }
 function H(t, e) {
@@ -85,9 +85,9 @@ function H(t, e) {
 function U(t, e) {
   return !e || ('object' !== B(e) && 'function' != typeof e)
     ? (function (t) {
-        if (void 0 === t) throw new ReferenceError("this hasn't been initialised - super() hasn't been called")
-        return t
-      })(t)
+      if (void 0 === t) throw new ReferenceError('this hasn\'t been initialised - super() hasn\'t been called')
+      return t
+    })(t)
     : e
 }
 function W() {
@@ -105,8 +105,8 @@ function Q(t) {
     (Q = Object.setPrototypeOf
       ? Object.getPrototypeOf
       : function (t) {
-          return t.__proto__ || Object.getPrototypeOf(t)
-        }),
+        return t.__proto__ || Object.getPrototypeOf(t)
+      }),
     Q(t)
   )
 }
@@ -121,7 +121,7 @@ export const WsClient = (function (t) {
         configurable: !0,
       },
     })),
-      e && H(t, e)
+    e && H(t, e)
   })(n, t)
   var e = (function (t) {
     return function () {
@@ -177,7 +177,7 @@ export const WsClient = (function (t) {
                           t.next = 2
                           break
                         }
-                        throw new Error("'webSocketUrls' should not be empty")
+                        throw new Error('\'webSocketUrls\' should not be empty')
                       case 2:
                         return (
                           (this.wsList = this.webSocketUrls.map(function (t) {
@@ -189,9 +189,9 @@ export const WsClient = (function (t) {
                                 ;(t.onopen = function () {
                                   return e(t)
                                 }),
-                                  (t.onerror = function (t) {
-                                    return console.log(t)
-                                  })
+                                (t.onerror = function (t) {
+                                  return console.log(t)
+                                })
                               } catch (t) {
                                 console.log(t)
                               }
@@ -250,26 +250,26 @@ export const WsClient = (function (t) {
                         return (t.next = 2), this.connect()
                       case 2:
                         ;(this.ws = t.sent),
-                          (this.ws.binaryType = 'arraybuffer'),
-                          (this.ws.onclose = function (t) {
-                            e.emit('close', {
-                              event: t,
-                              isClientClose: e.isClientClose,
-                            })
-                          }),
-                          (this.ws.onerror = function (t) {
-                            e.emit('error', t)
-                          }),
-                          (this.ws.onmessage = function (t) {
-                            var n = t.data
-                            if ('string' == typeof n)
-                              try {
-                                n = JSON.parse(n)
-                              } catch (t) {
-                                console.error(t)
-                              }
-                            e.emit('message', n)
+                        (this.ws.binaryType = 'arraybuffer'),
+                        (this.ws.onclose = function (t) {
+                          e.emit('close', {
+                            event: t,
+                            isClientClose: e.isClientClose,
                           })
+                        }),
+                        (this.ws.onerror = function (t) {
+                          e.emit('error', t)
+                        }),
+                        (this.ws.onmessage = function (t) {
+                          var n = t.data
+                          if ('string' == typeof n)
+                            try {
+                              n = JSON.parse(n)
+                            } catch (t) {
+                              console.error(t)
+                            }
+                          e.emit('message', n)
+                        })
                       case 7:
                       case 'end':
                         return t.stop()
@@ -289,12 +289,12 @@ export const WsClient = (function (t) {
         key: 'close',
         value: function () {
           ;(this.isClientClose = !0),
-            this.heartbeatInterval && clearInterval(this.heartbeatIntervalId),
-            this.ws
-              ? this.ws.close()
-              : this.wsList.forEach(function (t) {
-                  return t.close()
-                })
+          this.heartbeatInterval && clearInterval(this.heartbeatIntervalId),
+          this.ws
+            ? this.ws.close()
+            : this.wsList.forEach(function (t) {
+              return t.close()
+            })
         },
       },
       {

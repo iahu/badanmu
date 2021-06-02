@@ -53,6 +53,6 @@ declare const decodeLib: {
             name: string;
         };
     };
-};
+}
 
 export const decodeLib
