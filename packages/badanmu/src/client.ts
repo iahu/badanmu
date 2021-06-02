@@ -74,11 +74,13 @@ export type Packet = {
 
 export default abstract class Client extends EventEmiter {
   roomID: ID
-  platform?: string
+  platform: string
   client?: WebSocket
-  constructor(roomID: ID) {
+  constructor(platform: string, roomID: ID) {
     super()
+    if (!platform) throw Error('no parameter "platform"')
     if (!roomID) throw Error('no parameter "roomID"')
+    this.platform = platform
     this.roomID = roomID
   }
 

@@ -1,12 +1,14 @@
 import WebSocket from 'ws'
 import protobuf from 'protobufjs'
 
-import { getLiveStreamId, getPageId, getTokenInfo, getWebSocketInfo, makeCookie } from './helper'
 import { cookies } from './config'
+import { decoeMsg } from './decode'
+import { getLiveStreamId, getPageId, getTokenInfo, getWebSocketInfo, makeCookie } from './helper'
 import { log2 } from '../log'
 import Client, { ID } from '../client'
 import login, { SessionInfo } from './login'
 import protoJson from './kuaishou.proto.json'
+import toArrayBuffer from '../huya/to-arraybuffer'
 
 const pb = protobuf.Root.fromJSON(protoJson)
 const socketMessagePb = pb.lookupType('SocketMessage')
@@ -37,20 +39,21 @@ type ClientOption = {
   liveStreamId: string
 }
 
+type WsParams = {
+  token: string
+  liveStreamId: string
+  webSocketUrls: string[]
+}
+
 export default class Kuaishou extends Client {
-  stream_id?: string
+  wsParams?: WsParams
   intervalId?: NodeJS.Timeout
   sessionInfo?: SessionInfo
 
   constructor(roomID: ID) {
-    super(roomID)
+    super('kuaishou', roomID)
 
-    // this.login()
-
-    this.start(roomID).catch((e) => {
-      this.emit('error', e)
-      this.emit('close', 0, e)
-    })
+    this.start(roomID)
   }
 
   login = (): void => {
@@ -60,7 +63,7 @@ export default class Kuaishou extends Client {
     })
   }
 
-  async start(roomID: ID): Promise<WebSocket | undefined> {
+  getWsParams = async (roomID: ID): Promise<WsParams> => {
     const defaultCookie = makeCookie(cookies)
     const tokenInfo = await getTokenInfo(defaultCookie)
     if (tokenInfo.errorMsg) {
@@ -86,53 +89,100 @@ export default class Kuaishou extends Client {
 
     const wsInfo = await getWebSocketInfo(liveStreamId, cookie)
     const { webSocketUrls, token } = wsInfo
-    const pageId = getPageId()
 
     if (!(webSocketUrls && token)) {
       console.log('账号异常', wsInfo)
       return Promise.reject('账号异常')
     }
 
-    this.client = this.createClient(webSocketUrls[0], {
-      token,
-      pageId,
-      liveStreamId,
-    })
-    return this.client
+    return { webSocketUrls, token, liveStreamId }
+  }
+
+  async start(roomID: ID): Promise<void> {
+    // const { webSocketUrls, token, liveStreamId } = await this.getWsParams(roomID)
+    const wsParams = {
+      liveStreamId: 'ce2AgAVVXf8',
+      webSocketUrls: ['wss://live-ws-pg-group8.kuaishou.com/websocket'],
+      token:
+        'Am9Q+j5IHoQzSy0t1EUrqF0v/P1Z1WAsepy96C+PIIMsftmnoT6m2DzW2abo/uVxdsAXD5I8/S2zgFQjwBmSdVPQ8zHzc566izZby/C737G1OyAzb1tboFddz6O9qbdFgp38wl+3sjvRP1HLckGuoLCSJyXLvfDr/MYHR0eLzV0=',
+    }
+    const { webSocketUrls, token, liveStreamId } = wsParams
+    this.wsParams = wsParams
+
+    this.client = this.createClient({ webSocketUrls, token, liveStreamId })
   }
 
   requireLogin = (dataUrl: string): void => {
     this.emit('requireLogin', dataUrl)
   }
 
-  createClient = (url: string, option: ClientOption): WebSocket | undefined => {
-    const { pageId, liveStreamId, token } = option
+  createClient = (wsParams: WsParams): WebSocket | undefined => {
+    const {
+      webSocketUrls: [url],
+      token,
+      liveStreamId,
+    } = wsParams
+
     if (!(url && liveStreamId && token)) {
-      log2.debug(this.roomInfo(), '参数不正常', option)
+      log2.debug(this.roomInfo(), '参数不正常', wsParams)
       return undefined
     }
 
-    const client = new WebSocket(url, {
-      headers: {
-        Cookie: 'userId=1736972579; client_key=65890b29; clientid=3; did=web_0cdd6cd1840f8db9adc2dab65dd82830',
-      },
-    })
+    const client = new WebSocket(url)
+    client.binaryType = 'arraybuffer'
     log2.info(this.roomInfo(), 'ws 创建成功', url)
 
-    const payload = { liveStreamId, token, pageId }
-    console.log('payload', payload)
     client.on('open', () => {
       this.emit('open')
+      const pageId = getPageId()
+      const payload = { liveStreamId, token, pageId }
       this.send({ type: 'CS_ENTER_ROOM', payload })
-      setTimeout(() => this.heartbeat(), 20000)
+      this.ping()
     })
 
-    client.on('close', (has_error, reason) => {
+    client.on('close', (code, reason) => {
       this.intervalId && clearInterval(this.intervalId)
-      this.emit('close', has_error, reason)
+      this.emit('close', code, reason)
+      log2.log('client closed', code, reason)
     })
     client.on('error', (error) => this.emit('error', error))
-    client.on('message', (msg) => this.emit('message', msg as any))
+    client.on('message', (data) => {
+      const buffer = Buffer.from(data as ArrayBufferLike)
+      const msg = decoeMsg(buffer)
+      console.log('msg', buffer.byteLength, msg)
+      if (!msg) {
+        return
+      }
+
+      switch (msg.type) {
+        case 'SC_ERROR': {
+          log2.error('SC_ERROR', msg)
+          this.emit('close', -1, 'SC_ERROR')
+          this.client?.close()
+          break
+        }
+        case 'SC_HEARTBEAT_ACK': {
+          console.log('what server ts', parseInt(msg.payload.timestamp))
+          console.log('what client ts', parseInt(msg.payload.clientTimestamp))
+          break
+        }
+        case 'SC_ENTER_ROOM_ACK': {
+          setTimeout(() => {
+            // reconnect
+            this.reconnect()
+          }, parseInt(msg.payload.minReconnectMs))
+          this.heartbeat(parseInt(msg.payload.heartbeatIntervalMs))
+          break
+        }
+        case 'SC_FEED_PUSH': {
+          log2.log('push msg', JSON.stringify(msg.payload))
+          break
+        }
+        default:
+          log2.debug('unkown msg', msg)
+          break
+      }
+    })
 
     return client
   }
@@ -150,12 +200,36 @@ export default class Kuaishou extends Client {
       throw err
     }
     const msgBuf = socketMessagePb.encode({ payloadType: key, payload: payloadBuf }).finish()
-    this.client?.send(msgBuf.slice().buffer)
+    log2.info('will send', msgBuf.byteLength, 'bytes:', JSON.stringify(payload))
+    this.client?.send(msgBuf)
+    log2.info('bufferAmount after send', this.client?.bufferedAmount)
   }
 
-  heartbeat = (): void => {
+  reconnect = (): void => {
+    if (!this.wsParams) {
+      return
+    }
+    const { token, liveStreamId } = this.wsParams
+    const pageId = getPageId()
+    const payload = { token, liveStreamId, pageId }
+
+    this.send({ type: 'CS_ENTER_ROOM', payload })
+  }
+
+  ping = (): void => {
+    this.send({ type: 'CS_HEARTBEAT', timestamp: Date.now().valueOf() })
+  }
+
+  heartbeat = (interval = 2000): void => {
+    if (!this.client) {
+      return
+    }
     this.intervalId = setInterval(() => {
-      this.send({ type: 'CS_HEARTBEAT', timestamp: Date.now().valueOf() })
-    }, 20000)
+      if (!this.client?.CLOSED) {
+        this.ping()
+      } else if (this.intervalId) {
+        clearInterval(this.intervalId)
+      }
+    }, interval)
   }
 }

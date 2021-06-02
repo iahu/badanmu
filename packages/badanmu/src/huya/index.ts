@@ -50,7 +50,7 @@ export default class Huya extends Client {
   // _chat_list: List
 
   constructor(roomID: ID) {
-    super(roomID)
+    super('huya', roomID)
     this.nickname = ''
     this.cookies = ''
     this.startTime = Date.now()
@@ -145,7 +145,6 @@ export default class Huya extends Client {
             msg.readFrom(stream)
             const { iUri: code, sMsg, lMsgId } = msg
             const TargetFn = TafMx.UriMapping[code]
-            log2.log('what', lMsgId)
             if (!TargetFn) {
               return
             }
@@ -238,18 +237,6 @@ export default class Huya extends Client {
 
     this.client?.send(e.getBuffer())
   }
-
-  // heartbeat(): void {
-  //   const heart_beat_req = new HUYA.UserHeartBeatReq()
-  //   const user_id = new HUYA.UserId()
-  //   user_id.sHuYaUA = 'webh5&1.0.0&websocket'
-  //   heart_beat_req.tId = user_id
-  //   heart_beat_req.lTid = this.chatInfo.topsid
-  //   heart_beat_req.lSid = this.chatInfo.subsid
-  //   heart_beat_req.lPid = this.chatInfo.yyuid
-  //   heart_beat_req.eLineType = 1
-  //   this.send_wup('onlineui', 'OnUserHeartBeat', heart_beat_req)
-  // }
 
   heartbeat = (): void => {
     if (!this.isRun) {

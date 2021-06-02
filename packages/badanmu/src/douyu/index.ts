@@ -19,7 +19,7 @@ export default class Douyu extends Client {
   public joined = false
 
   constructor(roomID: ID) {
-    super(roomID)
+    super('douyu', roomID)
 
     this.client = new WebSocket(Douyu.apiURL)
 

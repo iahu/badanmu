@@ -3,6 +3,19 @@ import EventEmitter from 'events'
 
 export type MsgType = 'login' | 'danmu'
 
+const parseMsg = (data: string) => {
+  if (data.startsWith('{') || data.startsWith('[')) {
+    try {
+      return JSON.parse(data)
+    } catch (e) {
+      console.error('parseMsg Error', e)
+      return null
+    }
+  } else {
+    return data
+  }
+}
+
 export default class TestClient extends EventEmitter {
   private wsOrigin: string
   private pageHoldOn = false
@@ -15,7 +28,11 @@ export default class TestClient extends EventEmitter {
       wsOrigin = 'ws://localhost:8181'
     }
     this.wsOrigin = wsOrigin
-    this.ws = new WebSocket(this.wsOrigin)
+    const ws = new WebSocket(this.wsOrigin)
+    this.ws = ws
+
+    ws.on('error', console.error)
+    ws.on('close', () => console.log('closed'))
   }
 
   /**
@@ -43,14 +60,11 @@ export default class TestClient extends EventEmitter {
     this.ws.on('open', () => {
       console.log('ws opened')
     })
-    this.ws.on('message', (data) => {
-      const msg = JSON.parse(data.toString('utf8'))
-      console.log('received ws message', data)
-      if (msg.commonType === 1001) {
-        console.log('send clienSize request')
-        this.ws.send(JSON.stringify({ type: 'clientSize' }))
-      } else if (msg.type === 'clientSize') {
-        console.info(data)
+    this.ws.on('message', (msg) => {
+      const data = parseMsg(msg.toString('utf8'))
+      console.log('received ws message', msg)
+      if (data.type === 'clientSize') {
+        console.info(msg)
         this.ws.close()
       } else {
         console.info(data.toString('utf8'))
