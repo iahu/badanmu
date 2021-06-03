@@ -35,7 +35,7 @@ type Parameters = {
 }
 
 const createClient = ({ info, onOpen, onClose, onMessage, onError }: Parameters) => {
-  const ws = new WebSocket('ws://broadcastlv.chat.bilibili.com:2244/sub')
+  const ws = new WebSocket('wss://broadcastlv.chat.bilibili.com/sub')
 
   ws.on('message', (data) => {
     if (data) {
@@ -87,9 +87,10 @@ export default class Bilibili extends Client {
     }
     const onMessage = (packet: DanmuPacket) => {
       packet.body.messages.forEach((msg) => {
-        if (msg.cmd === 'DANMU_MSG') {
+        const cmd = msg.cmd.split(':').shift()
+        if (cmd === 'DANMU_MSG') {
           this.emit('message', parseComment(msg.info))
-        } else if (msg.cmd === 'SEND_GIFT') {
+        } else if (cmd === 'SEND_GIFT') {
           this.emit('message', parseGift(msg.data))
         }
       })
