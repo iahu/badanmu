@@ -20,9 +20,6 @@ install:
       - merge_requests
       - /^release-v\d(\d|\d\.\d)*$/i
       - tags
-  except:
-    changes:
-      - '*.md'
   tags:
     - linux-runner
   script:

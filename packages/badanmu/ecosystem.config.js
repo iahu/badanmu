@@ -10,6 +10,8 @@ const apps = ['8000', '8001', '8002'].map((port) => ({
   },
   increment_var: 'PORT',
   args: port,
+  error_file: `./${port}-err.log`,
+  out_file: `./${port}-out.log`,
 }))
 
 module.exports = { apps }
