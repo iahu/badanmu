@@ -11,7 +11,7 @@ cache:
     - packages/**/dist/
 
 before_script:
-  - export PATH=$PATH:$PWD/node_modules/.bin:$PWD/packages/badanmu/node_modules/.bin
+  - export PATH=$PATH:/cygdrive/c/Users/bin/AppData/Roaming/npm:$PWD/node_modules/.bin:$PWD/packages/badanmu/node_modules/.bin
 
 install:
   stage: install
@@ -20,9 +20,6 @@ install:
       - merge_requests
       - /^release-v\d(\d|\d\.\d)*$/i
       - tags
-  except:
-    changes:
-      - '*.md'
   tags:
     - linux-runner
   script:

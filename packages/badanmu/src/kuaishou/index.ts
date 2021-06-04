@@ -2,7 +2,7 @@ import WebSocket from 'ws'
 import protobuf from 'protobufjs'
 
 import { cookies } from './config'
-import { decoeMsg } from './decode'
+import { decodeMsg } from './decode'
 import { getLiveStreamId, getPageId, getTokenInfo, getWebSocketInfo, makeCookie } from './helper'
 import { log2 } from '../log'
 import Client, { ID } from '../client'
@@ -148,7 +148,7 @@ export default class Kuaishou extends Client {
     client.on('error', (error) => this.emit('error', error))
     client.on('message', (data) => {
       const buffer = Buffer.from(data as ArrayBufferLike)
-      const msg = decoeMsg(buffer)
+      const msg = decodeMsg(buffer)
       console.log('msg', buffer.byteLength, msg)
       if (!msg) {
         return

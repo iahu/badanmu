@@ -95,6 +95,10 @@ const main = (port: number) => {
 
   log.info(`WebSocket 服务器正在监听 ${port} 端口`)
 
+  server.on('error', (error) => {
+    log.error('server error', error)
+  })
+
   server.on('connection', (ws) => {
     log.info('收到连接请求')
 

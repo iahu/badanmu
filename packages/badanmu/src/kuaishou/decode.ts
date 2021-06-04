@@ -76,7 +76,7 @@ type MessagePack = {
   compressionType: number
 }
 
-export function decoeMsg(data: ArrayBufferLike): Pack | undefined {
+export function decodeMsg(data: ArrayBufferLike): Pack | undefined {
   const pack = socketMessagePb.decode(new Uint8Array(data)) as unknown as MessagePack
   if (pack.payload) {
     const data = 3 === pack.compressionType ? decodePayload(pack.payload) : pack.payload
