@@ -46,12 +46,15 @@ export default class TestClient extends EventEmitter {
     })
     ws.on('error', console.error)
     ws.on('close', (e) => this.emit('close', e))
-    ws.on('message', (data) => {
-      const msg = JSON.parse(data.toString('utf8'))
-      if (msg.commonType === 1001) {
-        ws.send(JSON.stringify({ type: 'login', platform, roomId }))
-      } else {
-        console.info(data.toString('utf8'))
+    ws.on('message', (buf) => {
+      const data = buf.toString('utf8')
+      try {
+        const msg = JSON.parse(data)
+        if (msg.commonType === 1001) {
+          ws.send(JSON.stringify({ type: 'login', platform, roomId }))
+        }
+      } catch (e) {
+        console.log('origin msg', data)
       }
     })
   }

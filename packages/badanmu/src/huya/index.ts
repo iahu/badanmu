@@ -80,16 +80,18 @@ export default class Huya extends Client {
     })
       .then((t) => t.text())
       .then((body) => {
-        const subsid_array = body.match(/var SUBSID = '(.*)';/)
-        const topsid_array = body.match(/var TOPSID = '(.*)';/)
-        const yyuid_array = body.match(/ayyuid: '(.*)',/)
-
-        if (!subsid_array || !topsid_array || !yyuid_array) return Promise.reject('没找到页面信息')
+        const GLOBAL_INIT = body.match(/window.HNF_GLOBAL_INIT\s?=\s?(.+)<\/script>/)
+        if (!GLOBAL_INIT) return Promise.reject('没找到页面信息')
+        const globalInit = JSON.parse(GLOBAL_INIT[1])
+        // const subsid_array = body.match(/var SUBSID = '(.*)';/) || []
+        // const topsid_array = body.match(/var TOPSID = '(.*)';/) || []
+        // const yyuid_array = body.match(/ayyuid: '(.*)',/)
+        // const lUid = body.match(/"lUid":'(.*)',/)
 
         return {
-          subsid: subsid_array[1] === '' ? 0 : parseInt(subsid_array[1]),
-          topsid: topsid_array[1] === '' ? 0 : parseInt(topsid_array[1]),
-          yyuid: parseInt(yyuid_array[1]),
+          subsid: 0,
+          topsid: 0,
+          yyuid: globalInit.roomProfile.lUid,
         }
       })
   }

@@ -8,7 +8,6 @@ import { log2 } from '../log'
 import Client, { ID } from '../client'
 import login, { SessionInfo } from './login'
 import protoJson from './kuaishou.proto.json'
-import toArrayBuffer from '../huya/to-arraybuffer'
 
 const pb = protobuf.Root.fromJSON(protoJson)
 const socketMessagePb = pb.lookupType('SocketMessage')
@@ -99,13 +98,13 @@ export default class Kuaishou extends Client {
   }
 
   async start(roomID: ID): Promise<void> {
-    // const { webSocketUrls, token, liveStreamId } = await this.getWsParams(roomID)
-    const wsParams = {
-      liveStreamId: 'ce2AgAVVXf8',
-      webSocketUrls: ['wss://live-ws-pg-group8.kuaishou.com/websocket'],
-      token:
-        'Am9Q+j5IHoQzSy0t1EUrqF0v/P1Z1WAsepy96C+PIIMsftmnoT6m2DzW2abo/uVxdsAXD5I8/S2zgFQjwBmSdVPQ8zHzc566izZby/C737G1OyAzb1tboFddz6O9qbdFgp38wl+3sjvRP1HLckGuoLCSJyXLvfDr/MYHR0eLzV0=',
-    }
+    const wsParams = await this.getWsParams(roomID)
+    // const wsParams = {
+    //   liveStreamId: 'ce2AgAVVXf8',
+    //   webSocketUrls: ['wss://live-ws-pg-group8.kuaishou.com/websocket'],
+    //   token:
+    //     'Am9Q+j5IHoQzSy0t1EUrqF0v/P1Z1WAsepy96C+PIIMsftmnoT6m2DzW2abo/uVxdsAXD5I8/S2zgFQjwBmSdVPQ8zHzc566izZby/C737G1OyAzb1tboFddz6O9qbdFgp38wl+3sjvRP1HLckGuoLCSJyXLvfDr/MYHR0eLzV0=',
+    // }
     const { webSocketUrls, token, liveStreamId } = wsParams
     this.wsParams = wsParams
 
@@ -200,9 +199,9 @@ export default class Kuaishou extends Client {
       throw err
     }
     const msgBuf = socketMessagePb.encode({ payloadType: key, payload: payloadBuf }).finish()
-    log2.info('will send', msgBuf.byteLength, 'bytes:', JSON.stringify(payload))
+    // log2.info('will send', msgBuf.byteLength, 'bytes:', JSON.stringify(payload))
     this.client?.send(msgBuf)
-    log2.info('bufferAmount after send', this.client?.bufferedAmount)
+    // log2.info('bufferAmount after send', this.client?.bufferedAmount)
   }
 
   reconnect = (): void => {
