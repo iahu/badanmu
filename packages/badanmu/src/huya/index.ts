@@ -83,10 +83,6 @@ export default class Huya extends Client {
         const GLOBAL_INIT = body.match(/window.HNF_GLOBAL_INIT\s?=\s?(.+)<\/script>/)
         if (!GLOBAL_INIT) return Promise.reject('没找到页面信息')
         const globalInit = JSON.parse(GLOBAL_INIT[1])
-        // const subsid_array = body.match(/var SUBSID = '(.*)';/) || []
-        // const topsid_array = body.match(/var TOPSID = '(.*)';/) || []
-        // const yyuid_array = body.match(/ayyuid: '(.*)',/)
-        // const lUid = body.match(/"lUid":'(.*)',/)
 
         return {
           subsid: 0,
