@@ -1,3 +1,7 @@
+# 巴旦木/扒弹幕
+
+Node.js 实现的 bilibli/douyu/huya 弹幕监听服务
+
 ## 说明
 
 本项目使用 yarn-workspace 的方式来管理 monorepo
