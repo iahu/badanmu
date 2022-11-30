@@ -91,7 +91,7 @@ export interface SystemInfo extends Msg {
 export type Message = Comment | Gift | SystemInfo
 ```
 
-[查看详情](http://gitlab.egret-inner.com/hushuibin/badanmu/blob/master/src/client.ts#L5-64)
+[查看详情](./src/client.ts#L5-64)
 
 ## 发布
 
