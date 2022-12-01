@@ -1,25 +1,35 @@
 {
   "name": "badanmu",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "巴旦木/扒弹幕",
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "cli": "ts-node ./src/cli.ts",
     "build": "tsc",
-    "dev": "cross-env NODE_ENV=developement nodemon ./src/server.ts",
+    "cli": "ts-node ./src/cli.ts",
+    "dev": "cross-env NODE_ENV=developement nodemon ./src/cli.ts",
     "prestart": "npm run build",
-    "start": "cross-env NODE_ENV=production node ./dist/server.js",
+    "start": "cross-env NODE_ENV=production node ./dist/cli.js",
     "dev-client": "npx test-client",
     "prod-client": "cross-env NODE_ENV=production npx test-client",
     "lint": "eslint ./src --ext .js,.ts --fix"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "javascript",
+    "typescript",
+    "websocket",
+    "danmaku",
+    "danmu",
+    "bilibili",
+    "douyu",
+    "huya"
+  ],
+  "author": "i18u",
   "license": "ISC",
   "dependencies": {
     "@tars/stream": "^2.0.3",
-    "@types/node-fetch": "^2.5.10",
     "jsonwebtoken": "^8.5.1",
     "log4js": "^6.3.0",
     "node-fetch": "^2.6.1",
@@ -31,6 +41,7 @@
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.1",
     "@types/node": "^15.0.2",
+    "@types/node-fetch": "^2.5.10",
     "@types/pako": "^1.0.1",
     "@types/ws": "^7.4.2",
     "@typescript-eslint/eslint-plugin": "^4.26.1",

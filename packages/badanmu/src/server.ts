@@ -7,8 +7,7 @@ import Douyu from './douyu'
 import Huya from './huya'
 import Kuaishou from './kuaishou'
 import log from './log'
-
-const [port] = process.argv.slice(2)
+import { createClient } from 'create-client'
 
 type ClientMessage = {
   type?: string
@@ -31,23 +30,7 @@ const parseClientMsg = (data: string) => {
   }
 }
 
-const createClient = (platform: string, roomId: number | string, ws: WebSocket): Client | undefined => {
-  let upstream: Client | undefined
-  if (platform === 'bilibili') {
-    upstream = new Bilibili(roomId)
-  } else if (platform === 'douyu') {
-    upstream = new Douyu(roomId)
-  } else if (platform === 'huya') {
-    upstream = new Huya(roomId)
-  } else if (platform === 'kuaishou') {
-    upstream = new Kuaishou(roomId)
-  } else {
-    log.info('收到未知平台的消息请求', platform)
-  }
-
-  if (!upstream) return
-
-  upstream.platform = platform
+const listenToUpstream = (wsServer: WebSocket, upstream: Client, roomId: number | string): Client | undefined => {
   const roomInfo = upstream.roomInfo()
   log.info(`开始监听${roomInfo}`)
 
@@ -59,7 +42,7 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
     const msgWithComType = stringify({ ...msg, commonType, roomId })
 
     log.info(`接收到${roomInfo}的消息`, msgWithComType)
-    ws.send(msgWithComType)
+    wsServer.send(msgWithComType)
   }
   const cleanup = () => {
     upstream?.off('message', onMessage)
@@ -67,22 +50,22 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
   }
 
   upstream.once('open', () => {
-    ws.send(stringify({ type: 'loginResponse', data: 'success', roomId }))
+    wsServer.send(stringify({ type: 'loginResponse', data: 'success', roomId }))
   })
   upstream.on('message', onMessage)
   upstream.once('close', (code, reason) => {
     cleanup()
     log.info(roomInfo, 'client closed', code, reason)
-    ws.send(stringify({ type: 'close', code, data: reason }))
-    ws.close()
+    wsServer.send(stringify({ type: 'close', code, data: reason }))
+    wsServer.close()
   })
   upstream.on('error', (e) => {
     cleanup()
     log.error(roomInfo, 'client error', e)
-    ws.send(stringify({ type: 'close', code: 1, data: e.message }))
+    wsServer.send(stringify({ type: 'close', code: 1, data: e.message }))
   })
 
-  ws.once('close', (code, reason) => {
+  wsServer.once('close', (code, reason) => {
     log.info(roomInfo, 'closed', code, reason)
     cleanup()
   })
@@ -90,7 +73,7 @@ const createClient = (platform: string, roomId: number | string, ws: WebSocket):
   return upstream
 }
 
-const main = (port: number) => {
+export const main = (port: number): void => {
   const server = new WebSocket.Server({ port })
 
   log.info(`WebSocket 服务器正在监听 ${port} 端口`)
@@ -127,7 +110,14 @@ const main = (port: number) => {
 
       if (type === 'login' || (platform && roomId)) {
         if (platform && roomId) {
-          createClient(platform, roomId, ws)
+          const upstream = createClient(platform, roomId)
+          if (!upstream) {
+            log.info('收到未知平台的消息请求', platform)
+            return
+          }
+
+          upstream.platform = platform
+          listenToUpstream(ws, upstream, roomId)
         } else {
           ws.send('参数错误')
         }
@@ -139,5 +129,3 @@ const main = (port: number) => {
     })
   })
 }
-
-main(parseInt(port) || 8181)
