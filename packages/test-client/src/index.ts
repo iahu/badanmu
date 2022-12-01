@@ -11,7 +11,7 @@ const client = new TestClient(isDev)
 client.on('close', () => process.exit(0))
 
 program
-  .command('login <huya|douyu|bilibli> <roomId>')
+  .command('login <huya|douyu|bilibili> <roomId>')
   .alias('l')
   .description('login a room of platform')
   .action((platform, roomId) => {
