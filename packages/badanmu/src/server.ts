@@ -2,10 +2,7 @@ import WebSocket from 'ws'
 
 import { CommonType, getCommonType, stringify } from './helper'
 import { Message } from './client'
-import Bilibili from './bilibili'
-import Douyu from './douyu'
-import Huya from './huya'
-import Kuaishou from './kuaishou'
+import createClient from './createClient'
 import log from './log'
 
 const [port] = process.argv.slice(2)
@@ -15,8 +12,6 @@ type ClientMessage = {
   platform: string
   roomId: string | number
 }
-
-type Client = Bilibili | Douyu | Huya | Kuaishou
 
 const parseClientMsg = (data: string) => {
   if (data === '') {
@@ -31,18 +26,12 @@ const parseClientMsg = (data: string) => {
   }
 }
 
-const createClient = (platform: string, roomId: number | string, ws: WebSocket): Client | undefined => {
-  let upstream: Client | undefined
-  if (platform === 'bilibili') {
-    upstream = new Bilibili(roomId)
-  } else if (platform === 'douyu') {
-    upstream = new Douyu(roomId)
-  } else if (platform === 'huya') {
-    upstream = new Huya(roomId)
-  } else if (platform === 'kuaishou') {
-    upstream = new Kuaishou(roomId)
-  } else {
-    log.info('收到未知平台的消息请求', platform)
+const addWSListener = (platform: string, roomId: number | string, ws: WebSocket) => {
+  let upstream: ReturnType<typeof createClient> | undefined
+  try {
+    upstream = createClient(platform, roomId)
+  } catch (error) {
+    log.error(error)
   }
 
   if (!upstream) return
@@ -127,7 +116,7 @@ const main = (port: number) => {
 
       if (type === 'login' || (platform && roomId)) {
         if (platform && roomId) {
-          createClient(platform, roomId, ws)
+          addWSListener(platform, roomId, ws)
         } else {
           ws.send('参数错误')
         }

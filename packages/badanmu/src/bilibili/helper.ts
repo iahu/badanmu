@@ -72,10 +72,11 @@ export const decode = (data: ArrayBuffer): DanmuPacket => {
         body = [textDecoder.decode(chunk)]
       } else if (ver === 2) {
         const content = textDecoder.decode(pako.inflate(chunk))
-        body = content.split(/[\x00-\x1f]+/).filter((s) => s.startsWith('{'))
+        body = content.split(/[\x00-\x1f]+/)
       }
 
       if (body.length) {
+        body = body.filter((s) => s.startsWith('{') && s.endsWith('}'))
         try {
           const parse = (s: string) => s && JSON.parse(s)
           result.body.messages = body.map(parse)
