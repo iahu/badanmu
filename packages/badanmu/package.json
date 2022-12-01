@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "巴旦木/扒弹幕",
   "main": "./dist/index.js",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "files": [
     "dist"
   ],
