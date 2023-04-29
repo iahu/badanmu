@@ -7,7 +7,7 @@ import Douyu from './douyu'
 import Huya from './huya'
 import Kuaishou from './kuaishou'
 import log from './log'
-import { createClient } from 'create-client'
+import { createClient } from './create-client'
 
 type ClientMessage = {
   type?: string

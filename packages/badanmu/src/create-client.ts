@@ -1,7 +1,7 @@
-import Bilibili from 'bilibili'
-import Douyu from 'douyu'
-import Huya from 'huya'
-import Kuaishou from 'kuaishou'
+import Bilibili from './bilibili'
+import Douyu from './douyu'
+import Huya from './huya'
+import Kuaishou from './kuaishou'
 
 export type Client = Bilibili | Douyu | Huya | Kuaishou
 
