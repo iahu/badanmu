@@ -70,7 +70,18 @@ export default class Douyu extends Client {
   }
 
   login = (): void => {
-    this.send({ type: 'loginreq', roomid: this.roomID })
+    const uid = Math.floor(Math.random() * 999999999 + 1000000000);
+    const username = "visitor" + Math.floor(Math.random() * 9999999 + 10000000);
+    this.send({
+      type: 'loginreq',
+      roomid: this.roomID,
+      dfl: "sn@A=106@Sss@A=1/sn@A=107@Sss@A=1/sn@A=108@Sss@A=1/sn@A=105@Sss@A=1/sn@A=110@Sss@A=1/sn@A=undefined@Sss@A=1",
+      username: username,
+      uid: uid,
+      ver: "20220825",
+      aver: "218101901",
+      ct: "0",
+    })
   }
 
   logout = (): void => {
